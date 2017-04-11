@@ -15,5 +15,6 @@ Gem::Specification.new do |s|
   s.license = "BSD-2-Clause"
 
   s.add_development_dependency "rake"
+  s.add_development_dependency "minitest", "~> 4.0"
   s.add_development_dependency "test-unit"
 end
