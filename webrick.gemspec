@@ -14,5 +14,6 @@ Gem::Specification.new do |s|
   s.homepage = "https://www.ruby-lang.org"
   s.license = "BSD-2-Clause"
 
+  s.add_development_dependency "rake"
   s.add_development_dependency "test-unit"
 end
