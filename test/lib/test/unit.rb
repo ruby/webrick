@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 begin
   gem 'minitest', '< 5.0.0' if defined? Gem
 rescue Gem::LoadError
@@ -184,7 +184,7 @@ module Test
           options[:retry] = false
         end
 
-        opts.on '--ruby VAL', "Path to ruby; It'll have used at -j option" do |a|
+        opts.on '--ruby VAL', "Path to ruby which is used at -j option" do |a|
           options[:ruby] = a.split(/ /).reject(&:empty?)
         end
       end
@@ -290,13 +290,20 @@ module Test
 
       end
 
+      def flush_job_tokens
+        if @jobserver
+          r, w = @jobserver.shift(2)
+          @jobserver = nil
+          w << @job_tokens.slice!(0..-1)
+          r.close
+          w.close
+        end
+      end
+
       def after_worker_down(worker, e=nil, c=false)
         return unless @options[:parallel]
         return if @interrupt
-        if @jobserver
-          @jobserver[1] << @job_tokens
-          @job_tokens.clear
-        end
+        flush_job_tokens
         warn e if e
         real_file = worker.real_file and warn "running file: #{real_file}"
         @need_quit = true
@@ -313,8 +320,8 @@ module Test
         return unless @options[:parallel]
         return if @interrupt
         worker.close
-        if @jobserver and !@job_tokens.empty?
-          @jobserver[1] << @job_tokens.slice!(0)
+        if @jobserver and (token = @job_tokens.slice!(0))
+          @jobserver[1] << token
         end
         @workers.delete(worker)
         @dead_workers << worker
@@ -488,6 +495,7 @@ module Test
           end
 
           quit_workers
+          flush_job_tokens
 
           unless @interrupt || !@options[:retry] || @need_quit
             parallel = @options[:parallel]

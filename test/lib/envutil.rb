@@ -1,5 +1,5 @@
 # -*- coding: us-ascii -*-
-# frozen_string_literal: false
+# frozen_string_literal: true
 require "open3"
 require "timeout"
 require_relative "find_executable"
@@ -46,16 +46,24 @@ module EnvUtil
     attr_accessor :subprocess_timeout_scale
   end
 
+  def apply_timeout_scale(t)
+    if scale = EnvUtil.subprocess_timeout_scale
+      t * scale
+    else
+      t
+    end
+  end
+  module_function :apply_timeout_scale
+
   def invoke_ruby(args, stdin_data = "", capture_stdout = false, capture_stderr = false,
                   encoding: nil, timeout: 10, reprieve: 1, timeout_error: Timeout::Error,
                   stdout_filter: nil, stderr_filter: nil,
                   signal: :TERM,
                   rubybin: EnvUtil.rubybin,
                   **opt)
-    if scale = EnvUtil.subprocess_timeout_scale
-      timeout *= scale if timeout
-      reprieve *= scale if reprieve
-    end
+    timeout = apply_timeout_scale(timeout)
+    reprieve = apply_timeout_scale(reprieve) if reprieve
+
     in_c, in_p = IO.pipe
     out_p, out_c = IO.pipe if capture_stdout
     err_p, err_c = IO.pipe if capture_stderr && capture_stderr != :merge_to_stdout
@@ -151,7 +159,7 @@ module EnvUtil
   end
 
   def verbose_warning
-    class << (stderr = "")
+    class << (stderr = "".dup)
       alias write <<
     end
     stderr, $stderr, verbose, $VERBOSE = $stderr, stderr, $VERBOSE, true
@@ -274,10 +282,7 @@ if defined?(RbConfig)
       attr_reader :ruby
     end
     dir = File.dirname(ruby)
-    name = File.basename(ruby, CONFIG['EXEEXT'])
     CONFIG['bindir'] = dir
-    CONFIG['ruby_install_name'] = name
-    CONFIG['RUBY_INSTALL_NAME'] = name
     Gem::ConfigMap[:bindir] = dir if defined?(Gem::ConfigMap)
   end
 end

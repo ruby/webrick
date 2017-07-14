@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 class LeakChecker
   def initialize
     @fd_info = find_fds
@@ -61,7 +61,7 @@ class LeakChecker
         (h[fd] ||= []) << [io, autoclose, inspect]
       }
       fd_leaked.each {|fd|
-        str = ''
+        str = ''.dup
         if h[fd]
           str << ' :'
           h[fd].map {|io, autoclose, inspect|
