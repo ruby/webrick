@@ -1,8 +1,14 @@
 # Webrick
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/webrick`. To experiment with that code, run `bin/console` for an interactive prompt.
+WEBrick is an HTTP server toolkit that can be configured as an HTTPS server, a proxy server, and a virtual-host server.
 
-TODO: Delete this and the text above, and describe your gem
+WEBrick features complete logging of both server operations and HTTP access.
+
+WEBrick supports both basic and digest authentication in addition to algorithms not in RFC 2617.
+
+A WEBrick server can be composed of multiple WEBrick servers or servlets to provide differing behavior on a per-host or per-path basis. WEBrick includes servlets for handling CGI scripts, ERB pages, Ruby blocks and directory listings.
+
+WEBrick also includes tools for daemonizing a process and starting a process at a higher privilege level and dropping permissions.
 
 ## Installation
 
