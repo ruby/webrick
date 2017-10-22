@@ -28,7 +28,23 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To create a new WEBrick::HTTPServer that will listen to connections on port 8000 and serve documents from the current user's public_html folder:
+
+```
+require 'webrick'
+
+root = File.expand_path '~/public_html'
+server = WEBrick::HTTPServer.new :Port => 8000, :DocumentRoot => root
+```
+
+To run the server you will need to provide a suitable shutdown hook as
+starting the server blocks the current thread:
+
+```
+trap 'INT' do server.shutdown end
+
+server.start
+```
 
 ## Development
 
@@ -39,7 +55,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/webrick.
-
 
 ## License
 
