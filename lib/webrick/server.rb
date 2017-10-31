@@ -263,7 +263,7 @@ module WEBrick
         msg = "#{ex.class}: #{ex.message}\n\t#{ex.backtrace[0]}"
         @logger.error msg
       end
-      return sock
+      sock
     end
 
     ##
