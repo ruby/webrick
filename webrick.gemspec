@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative 'version'
+require_relative 'lib/webrick/version'
 
 Gem::Specification.new do |s|
   s.name = "webrick"
