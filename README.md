@@ -32,7 +32,7 @@ Or install it yourself as:
 
 To create a new WEBrick::HTTPServer that will listen to connections on port 8000 and serve documents from the current user's public_html folder:
 
-```
+```ruby
 require 'webrick'
 
 root = File.expand_path '~/public_html'
@@ -42,7 +42,7 @@ server = WEBrick::HTTPServer.new :Port => 8000, :DocumentRoot => root
 To run the server you will need to provide a suitable shutdown hook as
 starting the server blocks the current thread:
 
-```
+```ruby
 trap 'INT' do server.shutdown end
 
 server.start
