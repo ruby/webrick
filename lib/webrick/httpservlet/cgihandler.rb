@@ -36,7 +36,7 @@ module WEBrick
         super(server, name)
         @script_filename = name
         @tempdir = server[:TempDir]
-        @cgicmd = "#{CGIRunner} #{server[:CGIInterpreter]}"
+        @cgicmd = "#{CGIRunner} \"#{server[:CGIInterpreter]}\""
       end
 
       # :stopdoc:
