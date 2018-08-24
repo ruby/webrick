@@ -122,26 +122,26 @@ module WEBrick
 
     def format(format_string, params)
       format_string.gsub(/\%(?:\{(.*?)\})?>?([a-zA-Z%])/){
-         param, spec = $1, $2
-         case spec[0]
-         when ?e, ?i, ?n, ?o
-           raise AccessLogError,
-             "parameter is required for \"#{spec}\"" unless param
-           (param = params[spec][param]) ? escape(param) : "-"
-         when ?t
-           params[spec].strftime(param || CLF_TIME_FORMAT)
-         when ?p
-           case param
-           when 'remote'
-             escape(params["i"].peeraddr[1].to_s)
-           else
-             escape(params["p"].to_s)
-           end
-         when ?%
-           "%"
-         else
-           escape(params[spec].to_s)
-         end
+        param, spec = $1, $2
+        case spec[0]
+        when ?e, ?i, ?n, ?o
+          raise AccessLogError,
+            "parameter is required for \"#{spec}\"" unless param
+          (param = params[spec][param]) ? escape(param) : "-"
+        when ?t
+          params[spec].strftime(param || CLF_TIME_FORMAT)
+        when ?p
+          case param
+          when 'remote'
+            escape(params["i"].peeraddr[1].to_s)
+          else
+            escape(params["p"].to_s)
+          end
+        when ?%
+          "%"
+        else
+          escape(params[spec].to_s)
+        end
       }
     end
 
