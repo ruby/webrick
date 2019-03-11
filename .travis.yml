@@ -8,3 +8,7 @@ rvm:
   - ruby-head
 before_install: gem install bundler
 script: rake
+matrix:
+  allow_failures:
+    - rvm: 2.3.8
+    - rvm: 2.4.5
