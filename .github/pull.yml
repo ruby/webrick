@@ -1,0 +1,6 @@
+version: "1"
+rules:
+  - base: master
+    upstream: ruby:master
+    autoMerge: false
+    autoMergeHardReset: false
