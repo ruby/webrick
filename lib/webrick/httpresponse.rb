@@ -11,6 +11,7 @@
 
 require 'time'
 require 'uri'
+require 'stringio'
 require_relative 'httpversion'
 require_relative 'htmlutils'
 require_relative 'httputils'
@@ -319,9 +320,9 @@ module WEBrick
     end
 
     def to_s # :nodoc:
-      ret = ""
+      ret = StringIO.new
       send_response(ret)
-      ret
+      ret.string
     end
 
     ##

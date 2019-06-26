@@ -3,6 +3,7 @@ require "webrick"
 require "minitest/autorun"
 require "stringio"
 require "net/http"
+require "time"
 
 module WEBrick
   class TestHTTPResponse < MiniTest::Unit::TestCase
@@ -228,6 +229,24 @@ module WEBrick
         @res.status = status
         assert_match(/\S\r\n/, @res.status_line)
       end
+    end
+
+    def test_to_s
+      date = Time.now.httpdate
+      # HTTPResponse with #body = 'hoge' and #keep_alive = true
+      expected = <<~_end_of_message_.chomp.gsub(LF, CRLF)
+        HTTP/1.1 200 OK
+        Date: #{date}
+        Server: #{config[:ServerSoftware]}
+        Content-Length: 4
+        Connection: Keep-Alive
+
+        hoge
+      _end_of_message_
+
+      res.body = 'hoge'
+      res['Date'] = date
+      assert_equal expected, res.to_s
     end
   end
 end
