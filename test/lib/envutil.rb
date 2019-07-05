@@ -55,6 +55,13 @@ module EnvUtil
   end
   module_function :apply_timeout_scale
 
+  def timeout(sec, klass = nil, message = nil, &blk)
+    return yield(sec) if sec == nil or sec.zero?
+    sec = apply_timeout_scale(sec)
+    Timeout.timeout(sec, klass, message, &blk)
+  end
+  module_function :timeout
+
   def invoke_ruby(args, stdin_data = "", capture_stdout = false, capture_stderr = false,
                   encoding: nil, timeout: 10, reprieve: 1, timeout_error: Timeout::Error,
                   stdout_filter: nil, stderr_filter: nil,
