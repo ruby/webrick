@@ -42,12 +42,22 @@ module EnvUtil
   DEFAULT_SIGNALS = Signal.list
   DEFAULT_SIGNALS.delete("TERM") if /mswin|mingw/ =~ RUBY_PLATFORM
 
+  RUBYLIB = ENV["RUBYLIB"]
+
   class << self
-    attr_accessor :subprocess_timeout_scale
+    attr_accessor :timeout_scale
+    attr_reader :original_internal_encoding, :original_external_encoding,
+                :original_verbose
+
+    def capture_global_values
+      @original_internal_encoding = Encoding.default_internal
+      @original_external_encoding = Encoding.default_external
+      @original_verbose = $VERBOSE
+    end
   end
 
   def apply_timeout_scale(t)
-    if scale = EnvUtil.subprocess_timeout_scale
+    if scale = EnvUtil.timeout_scale
       t * scale
     else
       t
@@ -62,14 +72,48 @@ module EnvUtil
   end
   module_function :timeout
 
+  def terminate(pid, signal = :TERM, pgroup = nil, reprieve = 1)
+    reprieve = apply_timeout_scale(reprieve) if reprieve
+
+    signals = Array(signal).select do |sig|
+      DEFAULT_SIGNALS[sig.to_s] or
+        DEFAULT_SIGNALS[Signal.signame(sig)] rescue false
+    end
+    signals |= [:ABRT, :KILL]
+    case pgroup
+    when 0, true
+      pgroup = -pid
+    when nil, false
+      pgroup = pid
+    end
+    while signal = signals.shift
+      begin
+        Process.kill signal, pgroup
+      rescue Errno::EINVAL
+        next
+      rescue Errno::ESRCH
+        break
+      end
+      if signals.empty? or !reprieve
+        Process.wait(pid)
+      else
+        begin
+          Timeout.timeout(reprieve) {Process.wait(pid)}
+        rescue Timeout::Error
+        end
+      end
+    end
+    $?
+  end
+  module_function :terminate
+
   def invoke_ruby(args, stdin_data = "", capture_stdout = false, capture_stderr = false,
                   encoding: nil, timeout: 10, reprieve: 1, timeout_error: Timeout::Error,
                   stdout_filter: nil, stderr_filter: nil,
                   signal: :TERM,
-                  rubybin: EnvUtil.rubybin,
+                  rubybin: EnvUtil.rubybin, precommand: nil,
                   **opt)
     timeout = apply_timeout_scale(timeout)
-    reprieve = apply_timeout_scale(reprieve) if reprieve
 
     in_c, in_p = IO.pipe
     out_p, out_c = IO.pipe if capture_stdout
@@ -87,8 +131,11 @@ module EnvUtil
     if Array === args and Hash === args.first
       child_env.update(args.shift)
     end
+    if RUBYLIB and lib = child_env["RUBYLIB"]
+      child_env["RUBYLIB"] = [lib, RUBYLIB].join(File::PATH_SEPARATOR)
+    end
     args = [args] if args.kind_of?(String)
-    pid = spawn(child_env, rubybin, *args, **opt)
+    pid = spawn(child_env, *precommand, rubybin, *args, **opt)
     in_c.close
     out_c.close if capture_stdout
     err_c.close if capture_stderr && capture_stderr != :merge_to_stdout
@@ -102,35 +149,7 @@ module EnvUtil
       if (!th_stdout || th_stdout.join(timeout)) && (!th_stderr || th_stderr.join(timeout))
         timeout_error = nil
       else
-        signals = Array(signal).select do |sig|
-          DEFAULT_SIGNALS[sig.to_s] or
-            DEFAULT_SIGNALS[Signal.signame(sig)] rescue false
-        end
-        signals |= [:ABRT, :KILL]
-        case pgroup = opt[:pgroup]
-        when 0, true
-          pgroup = -pid
-        when nil, false
-          pgroup = pid
-        end
-        while signal = signals.shift
-          begin
-            Process.kill signal, pgroup
-          rescue Errno::EINVAL
-            next
-          rescue Errno::ESRCH
-            break
-          end
-          if signals.empty? or !reprieve
-            Process.wait(pid)
-          else
-            begin
-              Timeout.timeout(reprieve) {Process.wait(pid)}
-            rescue Timeout::Error
-            end
-          end
-        end
-        status = $?
+        status = terminate(pid, signal, opt[:pgroup], reprieve)
       end
       stdout = th_stdout.value if capture_stdout
       stderr = th_stderr.value if capture_stderr && capture_stderr != :merge_to_stdout
@@ -141,7 +160,7 @@ module EnvUtil
       stderr = stderr_filter.call(stderr) if stderr_filter
       if timeout_error
         bt = caller_locations
-        msg = "execution of #{bt.shift.label} expired"
+        msg = "execution of #{bt.shift.label} expired timeout (#{timeout} sec)"
         msg = Test::Unit::Assertions::FailDesc[status, msg, [stdout, stderr].join("\n")].()
         raise timeout_error, msg, bt.map(&:to_s)
       end
@@ -167,29 +186,32 @@ module EnvUtil
 
   def verbose_warning
     class << (stderr = "".dup)
-      alias write <<
+      alias write concat
+      def flush; end
     end
-    stderr, $stderr, verbose, $VERBOSE = $stderr, stderr, $VERBOSE, true
+    stderr, $stderr = $stderr, stderr
+    $VERBOSE = true
     yield stderr
     return $stderr
   ensure
-    stderr, $stderr, $VERBOSE = $stderr, stderr, verbose
+    stderr, $stderr = $stderr, stderr
+    $VERBOSE = EnvUtil.original_verbose
   end
   module_function :verbose_warning
 
   def default_warning
-    verbose, $VERBOSE = $VERBOSE, false
+    $VERBOSE = false
     yield
   ensure
-    $VERBOSE = verbose
+    $VERBOSE = EnvUtil.original_verbose
   end
   module_function :default_warning
 
   def suppress_warning
-    verbose, $VERBOSE = $VERBOSE, nil
+    $VERBOSE = nil
     yield
   ensure
-    $VERBOSE = verbose
+    $VERBOSE = EnvUtil.original_verbose
   end
   module_function :suppress_warning
 
@@ -202,26 +224,18 @@ module EnvUtil
   module_function :under_gc_stress
 
   def with_default_external(enc)
-    verbose, $VERBOSE = $VERBOSE, nil
-    origenc, Encoding.default_external = Encoding.default_external, enc
-    $VERBOSE = verbose
+    suppress_warning { Encoding.default_external = enc }
     yield
   ensure
-    verbose, $VERBOSE = $VERBOSE, nil
-    Encoding.default_external = origenc
-    $VERBOSE = verbose
+    suppress_warning { Encoding.default_external = EnvUtil.original_external_encoding }
   end
   module_function :with_default_external
 
   def with_default_internal(enc)
-    verbose, $VERBOSE = $VERBOSE, nil
-    origenc, Encoding.default_internal = Encoding.default_internal, enc
-    $VERBOSE = verbose
+    suppress_warning { Encoding.default_internal = enc }
     yield
   ensure
-    verbose, $VERBOSE = $VERBOSE, nil
-    Encoding.default_internal = origenc
-    $VERBOSE = verbose
+    suppress_warning { Encoding.default_internal = EnvUtil.original_internal_encoding }
   end
   module_function :with_default_internal
 
@@ -293,3 +307,5 @@ if defined?(RbConfig)
     Gem::ConfigMap[:bindir] = dir if defined?(Gem::ConfigMap)
   end
 end
+
+EnvUtil.capture_global_values
