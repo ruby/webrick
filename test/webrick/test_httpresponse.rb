@@ -1,11 +1,11 @@
 # frozen_string_literal: false
 require "webrick"
-require "minitest/autorun"
 require "stringio"
 require "net/http"
+require "test/unit"
 
 module WEBrick
-  class TestHTTPResponse < MiniTest::Unit::TestCase
+  class TestHTTPResponse < Test::Unit::TestCase
     class FakeLogger
       attr_reader :messages
 
