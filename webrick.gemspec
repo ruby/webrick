@@ -71,6 +71,4 @@ Gem::Specification.new do |s|
       "source_code_uri" => "https://git.ruby-lang.org/ruby.git/"
     }
   end
-
-  s.add_development_dependency "rake"
 end
