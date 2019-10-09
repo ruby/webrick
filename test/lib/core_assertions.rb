@@ -2,34 +2,41 @@
 
 module Test
   module Unit
+    module Assertions
+      def _assertions= n # :nodoc:
+        @_assertions = n
+      end
+
+      def _assertions # :nodoc:
+        @_assertions ||= 0
+      end
+
+      ##
+      # Returns a proc that will output +msg+ along with the default message.
+
+      def message msg = nil, ending = nil, &default
+        proc {
+          msg = msg.call.chomp(".") if Proc === msg
+          custom_message = "#{msg}.\n" unless msg.nil? or msg.to_s.empty?
+          "#{custom_message}#{default.call}#{ending || "."}"
+        }
+      end
+    end
+
     module CoreAssertions
       if defined?(MiniTest)
         require_relative '../../envutil'
         # for ruby core testing
         include MiniTest::Assertions
       else
+        module MiniTest
+          class Assertion < Exception; end
+          class Skip < Assertion; end
+        end
+
         require 'pp'
         require_relative 'envutil'
         include Test::Unit::Assertions
-
-        def _assertions= n # :nodoc:
-          @_assertions = n
-        end
-
-        def _assertions # :nodoc:
-          @_assertions ||= 0
-        end
-
-        ##
-        # Returns a proc that will output +msg+ along with the default message.
-
-        def message msg = nil, ending = nil, &default
-          proc {
-            msg = msg.call.chomp(".") if Proc === msg
-            custom_message = "#{msg}.\n" unless msg.nil? or msg.to_s.empty?
-            "#{custom_message}#{default.call}#{ending || "."}"
-          }
-        end
       end
 
       def mu_pp(obj) #:nodoc:
@@ -41,38 +48,10 @@ module Test
       end
 
       FailDesc = proc do |status, message = "", out = ""|
-        pid = status.pid
         now = Time.now
-        faildesc = proc do
-          if signo = status.termsig
-            signame = Signal.signame(signo)
-            sigdesc = "signal #{signo}"
-          end
-          log = EnvUtil.diagnostic_reports(signame, pid, now)
-          if signame
-            sigdesc = "SIG#{signame} (#{sigdesc})"
-          end
-          if status.coredump?
-            sigdesc = "#{sigdesc} (core dumped)"
-          end
-          full_message = ''.dup
-          message = message.call if Proc === message
-          if message and !message.empty?
-            full_message << message << "\n"
-          end
-          full_message << "pid #{pid}"
-          full_message << " exit #{status.exitstatus}" if status.exited?
-          full_message << " killed by #{sigdesc}" if sigdesc
-          if out and !out.empty?
-            full_message << "\n" << out.b.gsub(/^/, '| ')
-            full_message.sub!(/(?<!\n)\z/, "\n")
-          end
-          if log
-            full_message << "Diagnostic reports:\n" << log.b.gsub(/^/, '| ')
-          end
-          full_message
+        proc do
+          EnvUtil.failure_description(status, now, message, out)
         end
-        faildesc
       end
 
       def assert_in_out_err(args, test_stdin = "", test_stdout = [], test_stderr = [], message = nil,
@@ -80,15 +59,13 @@ module Test
         args = Array(args).dup
         args.insert((Hash === args[0] ? 1 : 0), '--disable=gems')
         stdout, stderr, status = EnvUtil.invoke_ruby(args, test_stdin, true, true, **opt)
-        if signo = status.termsig
-          EnvUtil.diagnostic_reports(Signal.signame(signo), status.pid, Time.now)
-        end
+        desc = FailDesc[status, message, stderr]
         if block_given?
           raise "test_stdout ignored, use block only or without block" if test_stdout != []
           raise "test_stderr ignored, use block only or without block" if test_stderr != []
           yield(stdout.lines.map {|l| l.chomp }, stderr.lines.map {|l| l.chomp }, status)
         else
-          all_assertions(message) do |a|
+          all_assertions(desc) do |a|
             [["stdout", test_stdout, stdout], ["stderr", test_stderr, stderr]].each do |key, exp, act|
               a.for(key) do
                 if exp.is_a?(Regexp)
@@ -202,6 +179,119 @@ eom
         ret
       end
 
+      # :call-seq:
+      #   assert_raise( *args, &block )
+      #
+      #Tests if the given block raises an exception. Acceptable exception
+      #types may be given as optional arguments. If the last argument is a
+      #String, it will be used as the error message.
+      #
+      #    assert_raise do #Fails, no Exceptions are raised
+      #    end
+      #
+      #    assert_raise NameError do
+      #      puts x  #Raises NameError, so assertion succeeds
+      #    end
+      def assert_raise(*exp, &b)
+        case exp.last
+        when String, Proc
+          msg = exp.pop
+        end
+
+        begin
+          yield
+        rescue MiniTest::Skip => e
+          return e if exp.include? MiniTest::Skip
+          raise e
+        rescue Exception => e
+          expected = exp.any? { |ex|
+            if ex.instance_of? Module then
+              e.kind_of? ex
+            else
+              e.instance_of? ex
+            end
+          }
+
+          assert expected, proc {
+            exception_details(e, message(msg) {"#{mu_pp(exp)} exception expected, not"}.call)
+          }
+
+          return e
+        ensure
+          unless e
+            exp = exp.first if exp.size == 1
+
+            flunk(message(msg) {"#{mu_pp(exp)} expected but nothing was raised"})
+          end
+        end
+      end
+
+      # :call-seq:
+      #   assert_raise_with_message(exception, expected, msg = nil, &block)
+      #
+      #Tests if the given block raises an exception with the expected
+      #message.
+      #
+      #    assert_raise_with_message(RuntimeError, "foo") do
+      #      nil #Fails, no Exceptions are raised
+      #    end
+      #
+      #    assert_raise_with_message(RuntimeError, "foo") do
+      #      raise ArgumentError, "foo" #Fails, different Exception is raised
+      #    end
+      #
+      #    assert_raise_with_message(RuntimeError, "foo") do
+      #      raise "bar" #Fails, RuntimeError is raised but the message differs
+      #    end
+      #
+      #    assert_raise_with_message(RuntimeError, "foo") do
+      #      raise "foo" #Raises RuntimeError with the message, so assertion succeeds
+      #    end
+      def assert_raise_with_message(exception, expected, msg = nil, &block)
+        case expected
+        when String
+          assert = :assert_equal
+        when Regexp
+          assert = :assert_match
+        else
+          raise TypeError, "Expected #{expected.inspect} to be a kind of String or Regexp, not #{expected.class}"
+        end
+
+        ex = m = nil
+        EnvUtil.with_default_internal(expected.encoding) do
+          ex = assert_raise(exception, msg || proc {"Exception(#{exception}) with message matches to #{expected.inspect}"}) do
+            yield
+          end
+          m = ex.message
+        end
+        msg = message(msg, "") {"Expected Exception(#{exception}) was raised, but the message doesn't match"}
+
+        if assert == :assert_equal
+          assert_equal(expected, m, msg)
+        else
+          msg = message(msg) { "Expected #{mu_pp expected} to match #{mu_pp m}" }
+          assert expected =~ m, msg
+          block.binding.eval("proc{|_|$~=_}").call($~)
+        end
+        ex
+      end
+
+      def assert_warning(pat, msg = nil)
+        result = nil
+        stderr = EnvUtil.with_default_internal(pat.encoding) {
+          EnvUtil.verbose_warning {
+            result = yield
+          }
+        }
+        msg = message(msg) {diff pat, stderr}
+        assert(pat === stderr, msg)
+        result
+      end
+
+      def assert_warn(*args)
+        assert_warning(*args) {$VERBOSE = false; yield}
+      end
+
       class << (AssertFile = Struct.new(:failure_message).new)
         include CoreAssertions
         def assert_file_predicate(predicate, *args)
@@ -265,6 +355,38 @@ eom
         end
       end
 
+      # threads should respond to shift method.
+      # Array can be used.
+      def assert_join_threads(threads, message = nil)
+        errs = []
+        values = []
+        while th = threads.shift
+          begin
+            values << th.value
+          rescue Exception
+            errs << [th, $!]
+            th = nil
+          end
+        end
+        values
+      ensure
+        if th&.alive?
+          th.raise(Timeout::Error.new)
+          th.join rescue errs << [th, $!]
+        end
+        if !errs.empty?
+          msg = "exceptions on #{errs.length} threads:\n" +
+            errs.map {|t, err|
+            "#{t.inspect}:\n" +
+              err.full_message(highlight: false, order: :top)
+          }.join("\n---\n")
+          if message
+            msg = "#{message}\n#{msg}"
+          end
+          raise MiniTest::Assertion, msg
+        end
+      end
+
       def assert_all_assertions(msg = nil)
         all = AllFailures.new
         yield all
@@ -273,6 +395,23 @@ eom
       end
       alias all_assertions assert_all_assertions
 
+      def message(msg = nil, *args, &default) # :nodoc:
+        if Proc === msg
+          super(nil, *args) do
+            ary = [msg.call, (default.call if default)].compact.reject(&:empty?)
+            if 1 < ary.length
+              ary[0...-1] = ary[0...-1].map {|str| str.sub(/(?<!\.)\z/, '.') }
+            end
+            begin
+              ary.join("\n")
+            rescue Encoding::CompatibilityError
+              ary.map(&:b).join("\n")
+            end
+          end
+        else
+          super
+        end
+      end
     end
   end
 end
