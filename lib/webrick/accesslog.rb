@@ -149,9 +149,11 @@ module WEBrick
     # Escapes control characters in +data+
 
     def escape(data)
-      data = data.gsub(/[[:cntrl:]\\]+/) {$&.dump[1...-1]}
-      data.untaint if RUBY_VERSION < '2.7'
-      data
+      if data.tainted?
+        data.gsub(/[[:cntrl:]\\]+/) {$&.dump[1...-1]}.untaint
+      else
+        data
+      end
     end
   end
 end
