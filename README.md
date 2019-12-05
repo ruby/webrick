@@ -1,7 +1,5 @@
 # Webrick
 
-[![Build Status](https://travis-ci.org/ruby/webrick.svg?branch=master)](https://travis-ci.org/ruby/webrick)
-
 WEBrick is an HTTP server toolkit that can be configured as an HTTPS server, a proxy server, and a virtual-host server.
 
 WEBrick features complete logging of both server operations and HTTP access.

@@ -1,0 +1,27 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        ruby: [head, 2.6.0, 2.5.3, 2.4.5, 2.3.8]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: Run tests
+      run: rake
+      continue-on-error: ${{ matrix.ruby == '2.3.8' || matrix.ruby == '2.4.5' }}
