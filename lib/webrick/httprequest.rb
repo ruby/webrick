@@ -274,8 +274,7 @@ module WEBrick
       self
     end
 
-    # for IO.copy_stream.  Note: we may return a larger string than +size+
-    # here; but IO.copy_stream does not care.
+    # for IO.copy_stream.
     def readpartial(size, buf = ''.b) # :nodoc
       res = @body_tmp.shift or raise EOFError, 'end of file reached'
       if res.length > size
