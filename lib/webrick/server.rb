@@ -100,7 +100,7 @@ module WEBrick
       @logger.info("ruby #{rubyv}")
 
       @listeners = []
-      @shutdown_pipe = nil
+      @shutdown_pipe = @config[:ShutdownPipe]
       unless @config[:DoNotListen]
         if @config[:Listen]
           warn(":Listen option is deprecated; use GenericServer#listen", uplevel: 1)
