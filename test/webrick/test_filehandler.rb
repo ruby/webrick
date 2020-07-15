@@ -291,6 +291,13 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
   end
 
   def test_cjk_in_path
+    if Encoding.default_external == Encoding.find('US-ASCII')
+      reset_encoding = true
+      verb = $VERBOSE
+      $VERBOSE = false
+      Encoding.default_external = Encoding.find('UTF-8')
+    end
+
     Dir.mktmpdir("\u3042") do |dir|
       File.write("#{dir}/\u3042.txt", "test_cjk_in_path")
       config = { :DocumentRoot => dir }
@@ -299,6 +306,11 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
         req = Net::HTTP::Get.new("/%E3%81%82.txt")
         http.request(req){|res| assert_equal("200", res.code, log.call) }
       end
+    end
+  ensure
+    if reset_encoding
+      Encoding.default_external = Encoding.find('US-ASCII')
+      $VERBOSE = verb
     end
   end
 
