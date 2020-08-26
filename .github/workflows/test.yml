@@ -3,25 +3,22 @@ name: test
 on: [push, pull_request]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
+  build:
+    name: build (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       matrix:
-        ruby: [head, 2.6.0, 2.5.3, 2.4.5, 2.3.8]
-
+        ruby: [ 2.7, 2.6, 2.5, head ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
+    - uses: actions/checkout@master
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-
     - name: Install dependencies
-      run: bundle install
-
-    - name: Run tests
-      run: rake
-      continue-on-error: ${{ matrix.ruby == '2.3.8' || matrix.ruby == '2.4.5' }}
+      run: |
+        gem install bundler --no-document
+        bundle install
+    - name: Run test
+      run: rake test
