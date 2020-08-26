@@ -1,5 +1,10 @@
 # frozen_string_literal: true
-require_relative 'lib/webrick/version'
+begin
+  require_relative 'lib/webrick/version'
+rescue LoadError
+  # for Ruby core repository
+  require_relative 'version'
+end
 
 Gem::Specification.new do |s|
   s.name = "webrick"
