@@ -61,14 +61,12 @@ Gem::Specification.new do |s|
 
   s.authors = ["TAKAHASHI Masayoshi", "GOTOU YUUZOU", "Eric Wong"]
   s.email = [nil, nil, 'normal@ruby-lang.org']
-  s.homepage = "https://www.ruby-lang.org"
+  s.homepage = "https://github.com/ruby/webrick"
   s.licenses = ["Ruby", "BSD-2-Clause"]
 
   if s.respond_to?(:metadata=)
     s.metadata = {
-      "bug_tracker_uri" => "https://bugs.ruby-lang.org/projects/ruby-master/issues",
-      "homepage_uri" => "https://www.ruby-lang.org",
-      "source_code_uri" => "https://git.ruby-lang.org/ruby.git/"
+      "bug_tracker_uri" => "https://github.com/ruby/webrick/issues",
     }
   end
 
