@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 #
 # filehandler.rb -- FileHandler Module
 #
@@ -481,9 +481,9 @@ module WEBrick
         elsif !namewidth or (namewidth = namewidth.to_i) < 2
           namewidth = 25
         end
-        query = query.inject('') {|s, (k, v)| s << '&' << HTMLUtils::escape("#{k}=#{v}")}
+        query = query.inject('') {|s, (k, v)| s << '&' << HTMLUtils::escape("#{k}=#{v}")}.dup
 
-        type = "text/html"
+        type = +"text/html"
         case enc = Encoding.find('filesystem')
         when Encoding::US_ASCII, Encoding::ASCII_8BIT
         else
@@ -492,7 +492,7 @@ module WEBrick
         res['content-type'] = type
 
         title = "Index of #{HTMLUtils::escape(req.path)}"
-        res.body = <<-_end_of_html_
+        res.body = +<<-_end_of_html_
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <HTML>
   <HEAD>
@@ -528,7 +528,7 @@ module WEBrick
           else
             dname = name
           end
-          s =  "<TR><TD class=\"name\"><A HREF=\"#{HTTPUtils::escape(name)}#{query if name.end_with?('/')}\">#{HTMLUtils::escape(dname)}</A></TD>"
+          s =  +"<TR><TD class=\"name\"><A HREF=\"#{HTTPUtils::escape(name)}#{query if name.end_with?('/')}\">#{HTMLUtils::escape(dname)}</A></TD>"
           s << "<TD class=\"mtime\">" << (time ? time.strftime("%Y/%m/%d %H:%M") : "") << "</TD>"
           s << "<TD class=\"size\">" << (size >= 0 ? size.to_s : "-") << "</TD></TR>\n"
           res.body << s

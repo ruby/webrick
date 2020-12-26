@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 #
 # httpresponse.rb -- HTTPResponse Class
 #
@@ -332,7 +332,7 @@ module WEBrick
 
     def send_header(socket) # :nodoc:
       if @http_version.major > 0
-        data = status_line()
+        data = status_line().dup
         @header.each{|key, value|
           tmp = key.gsub(/\bwww|^te$|\b\w/){ $&.upcase }
           data << "#{tmp}: #{check_header(value)}" << CRLF
@@ -419,7 +419,7 @@ module WEBrick
     # :stopdoc:
 
     def error_body(backtrace, ex, host, port)
-      @body = ''
+      @body = +''
       @body << <<-_end_of_html_
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <HTML>
@@ -453,11 +453,11 @@ module WEBrick
         if @request_method == "HEAD"
           # do nothing
         elsif chunked?
-          buf  = ''
+          buf = +''
           begin
             @body.readpartial(@buffer_size, buf)
             size = buf.bytesize
-            data = "#{size.to_s(16)}#{CRLF}#{buf}#{CRLF}"
+            data = +"#{size.to_s(16)}#{CRLF}#{buf}#{CRLF}"
             socket.write(data)
             data.clear
             @sent_size += size
@@ -539,7 +539,7 @@ module WEBrick
         socket = @socket
         @resp.instance_eval {
           size = buf.bytesize
-          data = "#{size.to_s(16)}#{CRLF}#{buf}#{CRLF}"
+          data = +"#{size.to_s(16)}#{CRLF}#{buf}#{CRLF}"
           socket.write(data)
           data.clear
           @sent_size += size
