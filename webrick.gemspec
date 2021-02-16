@@ -69,6 +69,4 @@ Gem::Specification.new do |s|
       "bug_tracker_uri" => "https://github.com/ruby/webrick/issues",
     }
   end
-
-  s.add_development_dependency "rake"
 end
