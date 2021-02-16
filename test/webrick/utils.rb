@@ -39,6 +39,12 @@ module TestWEBrick
   include Test::Unit::Assertions
   extend Test::Unit::Assertions
 
+  include Test::Unit::Util::Output
+  extend Test::Unit::Util::Output
+
+  include Test::Unit::CoreAssertions
+  extend Test::Unit::CoreAssertions
+
   module_function
 
   DefaultLogTester = lambda {|log, access_log| assert_equal([], log) }
