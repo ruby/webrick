@@ -57,7 +57,7 @@ Gem::Specification.new do |s|
     "lib/webrick/version.rb",
     "webrick.gemspec",
   ]
-  s.required_ruby_version = ">= 2.3.0"
+  s.required_ruby_version = ">= 2.4.0"
 
   s.authors = ["TAKAHASHI Masayoshi", "GOTOU YUUZOU", "Eric Wong"]
   s.email = [nil, nil, 'normal@ruby-lang.org']
