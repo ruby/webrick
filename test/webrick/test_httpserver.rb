@@ -540,4 +540,23 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
       end
     }
   end
+
+  def test_accept_put_requests
+    TestWEBrick.start_httpserver {|server, addr, port, log|
+      server.mount_proc("/", lambda {|req, res|
+        res.status = 200
+        assert_equal("abcde", req.body)
+      })
+      Thread.pass while server.status != :Running
+
+      Net::HTTP.start(addr, port) do |http|
+        req = Net::HTTP::Put.new("/")
+        req.body = "abcde"
+        http.request(req){|res|
+          assert_equal("200", res.code)
+        }
+        server.shutdown
+      end
+    }
+  end
 end
