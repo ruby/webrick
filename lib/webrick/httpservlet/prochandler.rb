@@ -40,6 +40,7 @@ module WEBrick
       end
 
       alias do_POST do_GET
+      alias do_PUT  do_GET
       # :startdoc:
     end
 
