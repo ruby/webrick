@@ -102,7 +102,7 @@ module WEBrick
       @listeners = []
       @shutdown_pipe = nil
       unless @config[:DoNotListen]
-        raise ArgumentError, "Port must an integer" unless @config[:Port].to_s == @config[:Port].to_i.to_s
+        raise ArgumentError, "Port must be an integer" unless @config[:Port].to_s == @config[:Port].to_i.to_s
 
         @config[:Port] = @config[:Port].to_i
         if @config[:Listen]
