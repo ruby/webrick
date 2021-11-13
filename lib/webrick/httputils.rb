@@ -404,7 +404,7 @@ module WEBrick
     # Parses form data in +io+ with the given +boundary+
 
     def parse_form_data(io, boundary)
-      boundary_regexp = /\A--#{Regexp.quote(boundary)}(--)?#{CRLF}\z/
+      boundary_regexp = /\A--#{Regexp.quote(boundary)}(--|#{CRLF}|--#{CRLF})\z/
       form_data = Hash.new
       return form_data unless io
       data = nil
