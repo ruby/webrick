@@ -17,6 +17,11 @@ class TestWEBrickHTTPS < Test::Unit::TestCase
   class HTTPSNITest < ::Net::HTTP
     attr_accessor :sni_hostname
 
+    def connect
+      @address = 'localhost' if @address == '127.0.0.1'
+      super
+    end
+
     def ssl_socket_connect(s, timeout)
       s.hostname = sni_hostname
       super
