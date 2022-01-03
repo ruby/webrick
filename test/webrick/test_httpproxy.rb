@@ -282,7 +282,7 @@ class TestWEBrickHTTPProxy < Test::Unit::TestCase
     #    3.   ------- GET or POST ---------->
     #
     key = TEST_KEY_RSA2048
-    cert = make_certificate(key, "127.0.0.1")
+    cert = make_certificate(key, "localhost")
     s_config = {
       :SSLEnable =>true,
       :ServerName => "localhost",
@@ -300,7 +300,7 @@ class TestWEBrickHTTPProxy < Test::Unit::TestCase
         res.body = "SSL #{req.request_method} #{req.path} #{req.body}"
       }
       TestWEBrick.start_httpproxy(config){|server, addr, port, log|
-        http = Net::HTTP.new("127.0.0.1", s_port, addr, port)
+        http = Net::HTTP.new("localhost", s_port, addr, port)
         http.use_ssl = true
         http.verify_callback = Proc.new do |preverify_ok, store_ctx|
           store_ctx.current_cert.to_der == cert.to_der
@@ -398,7 +398,7 @@ class TestWEBrickHTTPProxy < Test::Unit::TestCase
           #    3.   ---------- GET or POST -------------->
           #
           key = TEST_KEY_RSA2048
-          cert = make_certificate(key, "127.0.0.1")
+          cert = make_certificate(key, "localhost")
           s_config = {
             :SSLEnable =>true,
             :ServerName => "localhost",
@@ -409,7 +409,7 @@ class TestWEBrickHTTPProxy < Test::Unit::TestCase
             s_server.mount_proc("/"){|req2, res|
               res.body = "SSL #{req2.request_method} #{req2.path} #{req2.body}"
             }
-            http = Net::HTTP.new("127.0.0.1", s_port, addr, port, up_log.call + log.call + s_log.call)
+            http = Net::HTTP.new("localhost", s_port, addr, port, up_log.call + log.call + s_log.call)
             http.use_ssl = true
             http.verify_callback = Proc.new do |preverify_ok, store_ctx|
               store_ctx.current_cert.to_der == cert.to_der
