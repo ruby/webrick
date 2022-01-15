@@ -196,6 +196,29 @@ GET /
                  req.request_uri)
     assert_equal("[fe80::208:dff:feef:98c7]", req.host)
     assert_equal(8080, req.port)
+
+    msg = <<-_end_of_message_
+      GET /path HTTP/1.1
+      Host: a_b.example.com
+
+    _end_of_message_
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    assert_equal(URI.parse("http://a_b.example.com/path"),
+                 req.request_uri)
+    assert_equal("a_b.example.com", req.host)
+    assert_equal(80, req.port)
+    msg = <<-_end_of_message_
+      GET /path HTTP/1.1
+      Host: a_b.example.com:8080
+
+    _end_of_message_
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    assert_equal(URI.parse("http://a_b.example.com:8080/path"),
+                 req.request_uri)
+    assert_equal("a_b.example.com", req.host)
+    assert_equal(8080, req.port)
   end
 
   def test_parse_get_params
