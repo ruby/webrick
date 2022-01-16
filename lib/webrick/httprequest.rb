@@ -488,22 +488,22 @@ module WEBrick
       str.sub!(%r{\A/+}o, '/')
       uri = URI::parse(str)
       return uri if uri.absolute?
-      uri.scheme = @forwarded_proto || scheme
       if @forwarded_host
         host, port = @forwarded_host, @forwarded_port
       elsif self["host"]
-        host, port = parse_host_request_line(self["host"], uri.scheme)
+        host, port = parse_host_request_line(self["host"])
       elsif @addr.size > 0
         host, port = @addr[2], @addr[1]
       else
         host, port = @config[:ServerName], @config[:Port]
       end
+      uri.scheme = @forwarded_proto || scheme
       uri.host = host
       uri.port = port ? port.to_i : nil
       return URI::parse(uri.to_s)
     end
 
-    def parse_host_request_line(host, _scheme)
+    def parse_host_request_line(host)
       pattern = /\A(#{URI::REGEXP::PATTERN::HOST})(?::(\d+))?\z/no
       host.scan(pattern)[0]
     end
