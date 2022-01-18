@@ -259,6 +259,8 @@ module WEBrick
 
       def eof?
         input.eof?
+      rescue Errno::ECONNRESET
+        true
       end
 
       def <<(data)
