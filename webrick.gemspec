@@ -18,8 +18,6 @@ Gem::Specification.new do |s|
     "LICENSE.txt",
     "README.md",
     "Rakefile",
-    "bin/console",
-    "bin/setup",
     "lib/webrick.rb",
     "lib/webrick/accesslog.rb",
     "lib/webrick/cgi.rb",
