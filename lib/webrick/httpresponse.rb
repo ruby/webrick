@@ -106,6 +106,17 @@ module WEBrick
     attr_reader :sent_size
 
     ##
+    # Set the response body proc as an streaming/upgrade response.
+
+    attr_accessor :upgrade
+
+    def upgrade!(protocol)
+      @upgrade = protocol
+      @keep_alive = false
+      @chunked = false
+    end
+
+    ##
     # Creates a new HTTP response object.  WEBrick::Config::HTTP is the
     # default configuration.
 
@@ -242,6 +253,14 @@ module WEBrick
       @header['server'] ||= @config[:ServerSoftware]
       @header['date']   ||= Time.now.httpdate
 
+      if @upgrade
+        @header['connection'] = 'upgrade'
+        @header['upgrade'] = @upgrade
+        @keep_alive = false
+
+        return
+      end
+
       # HTTP/0.9 features
       if @request_http_version < "1.0"
         @http_version = HTTPVersion.new("0.9")
@@ -268,11 +287,10 @@ module WEBrick
       elsif %r{^multipart/byteranges} =~ @header['content-type']
         @header.delete('content-length')
       elsif @header['content-length'].nil?
-        if @body.respond_to? :readpartial
-        elsif @body.respond_to? :call
-          make_body_tempfile
-        else
+        if @body.respond_to?(:bytesize)
           @header['content-length'] = (@body ? @body.bytesize : 0).to_s
+        else
+          @header['connection'] = 'close'
         end
       end
 
@@ -517,14 +535,14 @@ module WEBrick
         @body.call(ChunkedWrapper.new(socket, self))
         socket.write("0#{CRLF}#{CRLF}")
       else
-        size = @header['content-length'].to_i
         if @bodytempfile
           @bodytempfile.rewind
           IO.copy_stream(@bodytempfile, socket)
         else
           @body.call(socket)
         end
-        @sent_size = size
+
+        @sent_size = @header['content-length'].to_i
       end
     end
 
