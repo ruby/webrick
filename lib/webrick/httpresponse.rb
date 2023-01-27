@@ -110,12 +110,6 @@ module WEBrick
 
     attr_accessor :upgrade
 
-    def upgrade!(protocol)
-      @upgrade = protocol
-      @keep_alive = false
-      @chunked = false
-    end
-
     ##
     # Creates a new HTTP response object.  WEBrick::Config::HTTP is the
     # default configuration.
@@ -226,6 +220,16 @@ module WEBrick
 
     def keep_alive?
       @keep_alive
+    end
+
+    ##
+    # Sets the response to be a streaming/upgrade response.
+    # This will disable keep-alive and chunked transfer encoding.
+
+    def upgrade!(protocol)
+      @upgrade = protocol
+      @keep_alive = false
+      @chunked = false
     end
 
     ##
