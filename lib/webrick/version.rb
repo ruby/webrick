@@ -14,5 +14,5 @@ module WEBrick
   ##
   # The WEBrick version
 
-  VERSION      = "1.8.0"
+  VERSION      = "1.8.1"
 end
