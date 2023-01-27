@@ -28,6 +28,10 @@ module WEBrick
       @res.keep_alive  = true
     end
 
+    def test_response_body_not_frozen
+      refute @res.body.frozen?
+    end
+
     def test_prevent_response_splitting_headers_crlf
       res['X-header'] = "malicious\r\nCookie: cracked_indicator_for_test"
       io = StringIO.new
