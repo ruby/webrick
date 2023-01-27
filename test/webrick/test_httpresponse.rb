@@ -290,6 +290,8 @@ module WEBrick
         chunk = s2.read
         assert_match /Connection: close\r\n\r\nhello/, chunk
         s2.close
+
+        thread.join
       end
       assert_empty logger.messages
     end
