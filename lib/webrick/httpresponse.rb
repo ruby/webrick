@@ -292,7 +292,7 @@ module WEBrick
         @header.delete('content-length')
       elsif @header['content-length'].nil?
         if @body.respond_to?(:bytesize)
-          @header['content-length'] = (@body ? @body.bytesize : 0).to_s
+          @header['content-length'] = @body.bytesize.to_s
         else
           @header['connection'] = 'close'
         end
