@@ -546,7 +546,9 @@ module WEBrick
           @body.call(socket)
         end
 
-        @sent_size = @header['content-length'].to_i
+        if content_length = @header['content-length']
+          @sent_size = content_length.to_i
+        end
       end
     end
 
