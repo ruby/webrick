@@ -268,7 +268,7 @@ module WEBrick
       IO.pipe do |r, w|
         @res.send_response(w)
         w.close
-        assert_match /Connection: upgrade\r\nUpgrade: text\r\n\r\nhello/, r.read
+        assert_match(/Connection: upgrade\r\nUpgrade: text\r\n\r\nhello/, r.read)
       end
       assert_empty logger.messages
     end
@@ -288,7 +288,7 @@ module WEBrick
         s2.write("hello")
         s2.close_write
         chunk = s2.read
-        assert_match /Connection: close\r\n\r\nhello/, chunk
+        assert_match(/Connection: close\r\n\r\nhello/, chunk)
         s2.close
       end
       assert_empty logger.messages
