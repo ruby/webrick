@@ -377,8 +377,7 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
       :ServerName => "localhost"
     }
     log_tester = lambda {|log, access_log|
-      assert_equal(1, log.length)
-      assert_match(/WARN  Could not determine content-length of response body./, log[0])
+      assert_empty log
     }
     TestWEBrick.start_httpserver(config, log_tester){|server, addr, port, log|
       server.mount_proc("/", lambda { |req, res|

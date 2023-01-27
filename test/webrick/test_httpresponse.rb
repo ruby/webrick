@@ -261,6 +261,39 @@ module WEBrick
       assert_equal 0, logger.messages.length
     end
 
+    def test_send_body_proc_upgrade
+      @res.body = Proc.new { |out| out.write('hello'); out.close }
+      @res.upgrade!("text")
+
+      IO.pipe do |r, w|
+        @res.send_response(w)
+        w.close
+        assert_match /Connection: upgrade\r\nUpgrade: text\r\n\r\nhello/, r.read
+      end
+      assert_empty logger.messages
+    end
+
+    def test_send_body_proc_stream
+      @res.body = Proc.new do |socket|
+        chunk = socket.read
+        socket.write(chunk)
+        socket.close
+      end
+
+      UNIXSocket.pair do |s1, s2|
+        thread = Thread.new do
+          @res.send_response(s1)
+        end
+
+        s2.write("hello")
+        s2.close_write
+        chunk = s2.read
+        assert_match /Connection: close\r\n\r\nhello/, chunk
+        s2.close
+      end
+      assert_empty logger.messages
+    end
+
     def test_set_error
       status = 400
       message = 'missing attribute'
