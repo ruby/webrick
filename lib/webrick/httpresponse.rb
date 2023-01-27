@@ -122,7 +122,7 @@ module WEBrick
       @status = HTTPStatus::RC_OK
       @reason_phrase = nil
       @http_version = HTTPVersion::convert(@config[:HTTPVersion])
-      @body = ''
+      @body = +""
       @keep_alive = true
       @cookies = []
       @request_method = nil
@@ -441,7 +441,7 @@ module WEBrick
     # :stopdoc:
 
     def error_body(backtrace, ex, host, port)
-      @body = +''
+      @body = +""
       @body << <<-_end_of_html_
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <HTML>
