@@ -109,4 +109,89 @@ class TestWEBrickHTTPS < Test::Unit::TestCase
       end
     }
   end
+
+  def test_ssl_meta_vars
+    # CA cert
+    ca_cert, ca_key = WEBrick::Utils.create_self_signed_cert(2048, "/CN=ca", "is CA")
+    ef = OpenSSL::X509::ExtensionFactory.new
+    ef.subject_certificate = ca_cert
+    ef.issuer_certificate = ca_cert
+    ca_cert.extensions = [
+      ef.create_extension("basicConstraints", "CA:TRUE", true),
+      ef.create_extension("keyUsage", "keyCertSign, cRLSign", true),
+      ef.create_extension("subjectKeyIdentifier", "hash", false)
+    ]
+    ca_cert.add_extension ef.create_extension("authorityKeyIdentifier", "keyid:always,issuer:always")
+    ca_cert.sign(ca_key, "SHA256")
+
+    # Client cert
+    client_cert, client_key = WEBrick::Utils.create_self_signed_cert(2048, "/CN=client", "is client")
+    client_cert.issuer = ca_cert.issuer
+    ef = OpenSSL::X509::ExtensionFactory.new
+    ef.subject_certificate = client_cert
+    ef.issuer_certificate = ca_cert
+    client_cert.extensions = [
+      ef.create_extension("basicConstraints", "CA:FALSE", true),
+      ef.create_extension("keyUsage", "digitalSignature", true),
+      ef.create_extension("subjectKeyIdentifier", "hash", false),
+      ef.create_extension("subjectAltName", "DNS:localhost,IP:127.0.0.1", false)
+    ]
+    client_cert.sign(ca_key, "SHA256")
+
+
+    # Server cert
+    server_cert, server_key = WEBrick::Utils.create_self_signed_cert(2048, "/CN=server", "is server")
+    server_cert.issuer = ca_cert.issuer
+    ef = OpenSSL::X509::ExtensionFactory.new
+    ef.subject_certificate = server_cert
+    ef.issuer_certificate = ca_cert
+    server_cert.extensions = [
+      ef.create_extension("basicConstraints", "CA:FALSE", true),
+      ef.create_extension("keyUsage", "digitalSignature", true),
+      ef.create_extension("subjectKeyIdentifier", "hash", false),
+      ef.create_extension("subjectAltName", "DNS:localhost,IP:127.0.0.1", false)
+    ]
+    server_cert.sign(ca_key, "SHA256")
+
+    # Client CA Store
+    ca_client_store = OpenSSL::X509::Store.new
+    ca_client_store.add_cert(ca_cert)
+    ca_client_store.add_cert(client_cert)
+
+    # Server CA Store
+    server_ca_store = OpenSSL::X509::Store.new
+    server_ca_store.add_cert(ca_cert)
+    server_ca_store.add_cert(server_cert)
+
+    config = {
+      SSLEnable: true,
+      :SSLCertName => "/CN=localhost",
+      SSLCertificate: server_cert,
+      SSLPrivateKey: server_key,
+      SSLVerifyClient: OpenSSL::SSL::VERIFY_PEER,
+      SSLCertificateStore: ca_client_store
+    }
+    TestWEBrick.start_httpserver(config){|server, addr, port, log|
+      env = nil
+      server.mount_proc("/") {|req, res|
+        env = req.meta_vars
+        res.body = "OK"
+      }
+
+      subject = nil
+      http = Net::HTTP.new(addr, port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_CLIENT_ONCE
+      http.cert = client_cert
+      http.key = client_key
+      http.extra_chain_cert = [ca_cert]
+      http.cert_store = server_ca_store
+      req = Net::HTTP::Get.new("/")
+      body = http.request(req).body
+      assert_not_nil(env)
+      assert_equal("SUCCESS", env["SSL_CLIENT_VERIFY"])
+      assert_equal("/CN=client", env["SSL_CLIENT_S_DN"])
+      assert_equal(client_cert.to_pem, env["SSL_CLIENT_CERT"])
+    }
+  end
 end
