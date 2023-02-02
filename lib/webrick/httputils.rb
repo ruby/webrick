@@ -55,7 +55,6 @@ module WEBrick
       "cer"   => "application/pkix-cert",
       "crl"   => "application/pkix-crl",
       "crt"   => "application/x-x509-ca-cert",
-     #"crl"   => "application/x-pkcs7-crl",
       "css"   => "text/css",
       "dms"   => "application/octet-stream",
       "doc"   => "application/msword",
