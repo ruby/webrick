@@ -317,7 +317,7 @@ module WEBrick
       # Location is a single absoluteURI.
       if location = @header['location']
         if @request_uri
-          @header['location'] = @request_uri.merge(location).to_s
+          @header['location'] = @request_uri.merge(CGI.escape(location)).to_s
         end
       end
     end
