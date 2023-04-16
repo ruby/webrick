@@ -183,7 +183,7 @@ module WEBrick
     # Splits a header value +str+ according to HTTP specification.
 
     def split_header_value(str)
-      str.scan(%r'\G((?:"(?:\\.|[^"])+?"|[^",]+)+)
+      str.scan(%r'\G((?:"(?:\\.|[^"])+?"|[^",]++)+)
                     (?:,\s*|\Z)'xn).flatten
     end
     module_function :split_header_value
