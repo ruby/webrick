@@ -14,4 +14,8 @@ task :sync_tool do
   FileUtils.cp "../ruby/tool/lib/find_executable.rb", "./test/lib"
 end
 
+task :generate_rbs do
+  exec("typeprof -q -Ilib sig/generate.rb -o sig/webrick.rbs")
+end
+
 task :default => :test

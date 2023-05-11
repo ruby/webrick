@@ -1,0 +1,850 @@
+# TypeProf 0.21.7
+
+# Classes
+module WEBrick
+  VERSION: String
+  CR: String
+  LF: String
+  CRLF: String
+
+  class HTTPVersion
+    include Comparable
+
+    attr_accessor major: Integer
+    attr_accessor minor: Integer
+    def self.convert: (untyped version) -> HTTPVersion
+    def initialize: (String version) -> void
+    def <=>: (untyped other) -> Integer?
+    def to_s: -> String
+  end
+
+  module HTTPUtils
+    DefaultMimeTypes: Hash[String, String]
+    UNESCAPED: Regexp
+    UNESCAPED_FORM: Regexp
+    NONASCII: Regexp
+    ESCAPED: Regexp
+    UNESCAPED_PCHAR: Regexp
+
+    def normalize_path: (String? path) -> String?
+                      | (String? path) -> String?
+    def self.normalize_path: (String? path) -> String?
+                           | (String? path) -> String?
+    def load_mime_types: (untyped file) -> Hash[untyped, untyped]
+                       | (untyped file) -> Hash[untyped, untyped]
+    def self.load_mime_types: (untyped file) -> Hash[untyped, untyped]
+                            | (untyped file) -> Hash[untyped, untyped]
+    def mime_type: (untyped filename, untyped mime_tab) -> String
+                 | (untyped filename, untyped mime_tab) -> String
+    def self.mime_type: (untyped filename, untyped mime_tab) -> String
+                      | (untyped filename, untyped mime_tab) -> String
+    def parse_header: (String? raw) -> Hash[String?, Array[String]]
+                    | (String? raw) -> Hash[String?, Array[String]]
+    def self.parse_header: (String? raw) -> Hash[String?, Array[String]]
+                         | (String? raw) -> Hash[String?, Array[String]]
+    def split_header_value: (String str) -> Array[untyped]
+                          | (String str) -> Array[untyped]
+    def self.split_header_value: (String str) -> Array[untyped]
+                               | (String str) -> Array[untyped]
+    def parse_range_header: (untyped ranges_specifier) -> Array[Range]?
+                          | (untyped ranges_specifier) -> Array[Range]?
+    def self.parse_range_header: (untyped ranges_specifier) -> Array[Range]?
+                               | (untyped ranges_specifier) -> Array[Range]?
+    def parse_qvalues: (String? value) -> (Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?])
+                     | (String? value) -> (Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?])
+    def self.parse_qvalues: (String? value) -> (Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?])
+                          | (String? value) -> (Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?])
+    def dequote: (String? str) -> String?
+               | (String? str) -> String?
+    def self.dequote: (String? str) -> String?
+                    | (String? str) -> String?
+    def quote: (String str) -> String
+             | (String str) -> String
+    def self.quote: (String str) -> String
+                  | (String str) -> String
+    def parse_query: (String? str) -> Hash[String, FormData]
+                   | (String? str) -> Hash[String, FormData]
+    def self.parse_query: (String? str) -> Hash[String, FormData]
+                        | (String? str) -> Hash[String, FormData]
+    def parse_form_data: (String? io, String? boundary) -> Hash[untyped, nil]
+                       | (String? io, String? boundary) -> Hash[untyped, nil]
+    def self.parse_form_data: (String? io, String? boundary) -> Hash[untyped, nil]
+                            | (String? io, String? boundary) -> Hash[untyped, nil]
+    def _make_regex: (String str) -> Regexp
+                   | (String str) -> Regexp
+    def self._make_regex: (String str) -> Regexp
+                        | (String str) -> Regexp
+    def _make_regex!: (String str) -> Regexp
+                    | (String str) -> Regexp
+    def self._make_regex!: (String str) -> Regexp
+                         | (String str) -> Regexp
+    def _escape: (String? str, Regexp regex) -> String
+               | (String? str, Regexp regex) -> String
+    def self._escape: (String? str, Regexp regex) -> String
+                    | (String? str, Regexp regex) -> String
+    def _unescape: (String? str, Regexp regex) -> String
+                 | (String? str, Regexp regex) -> String
+    def self._unescape: (String? str, Regexp regex) -> String
+                      | (String? str, Regexp regex) -> String
+    def escape: (nil str) -> String
+              | (nil str) -> String
+    def self.escape: (nil str) -> String
+                   | (nil str) -> String
+    def unescape: (String? str) -> String
+                | (String? str) -> String
+    def self.unescape: (String? str) -> String
+                     | (String? str) -> String
+    def escape_form: (untyped str) -> String
+                   | (untyped str) -> String
+    def self.escape_form: (untyped str) -> String
+                        | (untyped str) -> String
+    def unescape_form: (String? str) -> String
+                     | (String? str) -> String
+    def self.unescape_form: (String? str) -> String
+                          | (String? str) -> String
+    def escape_path: (untyped str) -> String
+                   | (untyped str) -> String
+    def self.escape_path: (untyped str) -> String
+                        | (untyped str) -> String
+    def escape8bit: (String? str) -> String
+                  | (String? str) -> String
+    def self.escape8bit: (String? str) -> String
+                       | (String? str) -> String
+
+    class FormData < String
+      EmptyRawHeader: Array[untyped]
+      EmptyHeader: Hash[untyped, untyped]
+      @raw_header: Array[String]
+      @header: Hash[String?, Array[String]]?
+
+      attr_accessor name: String?
+      attr_accessor filename: String?
+      attr_accessor next_data: FormData?
+      def initialize: (*String args) -> void
+                    | (*String args) -> void
+      def []: (*String key) -> String
+            | (*String key) -> String?
+      def <<: (String str) -> FormData
+            | (String str) -> FormData
+      def append_data: (untyped data) -> FormData
+                     | (untyped data) -> FormData
+      def each_data: ?{ (FormData) -> Array[untyped] } -> nil
+                   | { (FormData) -> Array[untyped] } -> nil
+      def list: -> Array[String]
+              | -> Array[untyped]
+      alias to_ary list
+      def to_s: -> String
+              | -> String
+    end
+  end
+
+  module Utils
+    RAND_CHARS: String
+
+    def set_non_blocking: (untyped io) -> true?
+    def self.set_non_blocking: (untyped io) -> true?
+    def set_close_on_exec: (untyped io) -> true?
+    def self.set_close_on_exec: (untyped io) -> true?
+    def su: (untyped user) -> nil
+    def self.su: (untyped user) -> nil
+    def getservername: -> String
+    def self.getservername: -> String
+    def create_listeners: (untyped address, untyped port) -> untyped
+    def self.create_listeners: (untyped address, untyped port) -> untyped
+    def random_string: (Integer len) -> String
+    def self.random_string: (Integer len) -> String
+    def timeout: (untyped seconds, ?singleton(Timeout::Error) exception) ?{ (?untyped) -> untyped } -> untyped
+    def self.timeout: (untyped seconds, ?singleton(Timeout::Error) exception) ?{ (?untyped) -> untyped } -> untyped
+
+    class TimeoutHandler
+      TimeoutMutex: Thread::Mutex
+      include Singleton
+      @timeout_info: Hash[untyped, untyped]
+      @queue: Thread::Queue
+      @watcher: nil
+
+      def self.register: (untyped seconds, singleton(Timeout::Error) exception) -> untyped
+      def self.cancel: (untyped id) -> untyped
+      def self.terminate: -> untyped
+      def initialize: -> void
+
+      private
+      def watch: -> bot
+      def watcher: -> nil
+
+      public
+      def interrupt: (untyped thread, untyped id, untyped exception) -> nil
+      def register: (untyped thread, untyped time, untyped exception) -> Integer
+      def cancel: (untyped thread, untyped id) -> false
+      def terminate: -> nil
+    end
+  end
+
+  class BasicLog
+    FATAL: Integer
+    ERROR: Integer
+    WARN: Integer
+    INFO: Integer
+    DEBUG: Integer
+    @log: IO?
+    @opened: bot
+
+    attr_accessor level: Integer
+    def initialize: (?IO? log_file, ?nil level) -> void
+    def close: -> nil
+    def log: (Integer level, String data) -> IO?
+    def <<: (untyped obj) -> IO?
+    def fatal: (untyped msg) -> IO?
+    def error: (untyped msg) -> IO?
+    def warn: (untyped msg) -> IO?
+    def info: (untyped msg) -> IO?
+    def debug: (untyped msg) -> IO?
+    def fatal?: -> bool
+    def error?: -> bool
+    def warn?: -> bool
+    def info?: -> bool
+    def debug?: -> bool
+
+    private
+    def format: (untyped arg) -> String
+  end
+
+  class Log < BasicLog
+    attr_accessor time_format: String
+    def initialize: (?IO? log_file, ?nil level) -> void
+    def log: (untyped level, untyped data) -> IO?
+  end
+
+  module Config
+    LIBDIR: String
+    General: Hash[untyped, untyped]
+    HTTP: Hash[untyped, untyped]
+    FileHandler: {NondisclosureName: [String, String], FancyIndexing: false, HandlerTable: Hash[untyped, untyped], HandlerCallback: nil, DirectoryCallback: nil, FileCallback: nil, UserDir: nil, AcceptableLanguages: Array[untyped]}
+    BasicAuth: {AutoReloadUserDB: true}
+    DigestAuth: {Algorithm: String, Domain: nil, Qop: [String], UseOpaque: true, UseNextNonce: false, CheckNc: false, UseAuthenticationInfoHeader: true, AutoReloadUserDB: true, NonceExpirePeriod: Integer, NonceExpireDelta: Integer, InternetExplorerHack: true, OperaHack: true}
+  end
+
+  class ServerError < StandardError
+  end
+
+  class SimpleServer
+    def self.start: ?{ -> nil } -> nil
+  end
+
+  class Daemon
+    def self.start: -> nil
+  end
+
+  class GenericServer
+    @shutdown_pipe: [IO, IO]?
+
+    attr_reader status: :Running | :Shutdown | :Stop
+    attr_reader config: untyped
+    attr_reader logger: untyped
+    attr_reader tokens: Thread::SizedQueue
+    attr_reader listeners: Array[untyped]
+    def initialize: (?Hash[untyped, untyped] config, ?Hash[untyped, untyped] default) -> void
+    def []: (:CGIPathEnv | :Logger | :MimeTypes | :RequestCallback | :RequestHandler key) -> untyped
+    def listen: (untyped address, untyped port) -> Array[untyped]
+    def start: -> nil
+    def stop: -> nil
+    def shutdown: -> nil
+    def run: (untyped sock) -> untyped
+
+    private
+    def accept_client: (IO svr) -> nil
+    def start_thread: (untyped sock) -> untyped
+    def call_callback: (:AcceptCallback | :StartCallback | :StopCallback callback_name, *untyped args) -> untyped
+    def setup_shutdown_pipe: -> [IO, IO]
+    def cleanup_shutdown_pipe: ([IO, IO]? shutdown_pipe) -> [IO, IO]?
+    def alarm_shutdown_pipe: { (?false) -> untyped } -> nil
+    def cleanup_listener: -> Array[untyped]
+  end
+
+  module AccessLog
+    CLF_TIME_FORMAT: String
+    COMMON_LOG_FORMAT: String
+    CLF: String
+    REFERER_LOG_FORMAT: String
+    AGENT_LOG_FORMAT: String
+    COMBINED_LOG_FORMAT: String
+
+    def setup_params: (untyped config, HTTPRequest req, HTTPResponse res) -> (Hash[String, (Complex | Float | HTTPRequest | HTTPResponse | Hash[String, String?] | Integer | Rational | String | Time)?])
+    def self.setup_params: (untyped config, HTTPRequest req, HTTPResponse res) -> (Hash[String, (Complex | Float | HTTPRequest | HTTPResponse | Hash[String, String?] | Integer | Rational | String | Time)?])
+    def format: (untyped format_string, Hash[String, (Complex | Float | HTTPRequest | HTTPResponse | Hash[String, String?] | Integer | Rational | String | Time)?] params) -> untyped
+    def self.format: (untyped format_string, Hash[String, (Complex | Float | HTTPRequest | HTTPResponse | Hash[String, String?] | Integer | Rational | String | Time)?] params) -> untyped
+    def escape: (String? data) -> String
+    def self.escape: (String? data) -> String
+
+    class AccessLogError < StandardError
+    end
+  end
+
+  module HTMLUtils
+    def escape: (String? string) -> String
+              | (String? string) -> String
+    def self.escape: (String? string) -> String
+                   | (String? string) -> String
+  end
+
+  class Cookie
+    @port: nil
+    @discard: nil
+    @comment_url: nil
+    @expires: String?
+
+    attr_reader name: String?
+    attr_accessor value: String?
+    attr_accessor version: Integer
+    attr_accessor domain: String?
+    attr_accessor path: String?
+    attr_accessor secure: true?
+    attr_accessor comment: String?
+    attr_accessor max_age: Integer?
+    def initialize: (String? name, String? value) -> void
+    def expires=: (String? t) -> String?
+    def expires: -> Time?
+    def to_s: -> String
+    def self.parse: (String str) -> Array[Cookie?]?
+    def self.parse_set_cookie: (String str) -> Cookie
+    def self.parse_set_cookies: (untyped str) -> untyped
+  end
+
+  module HTTPStatus
+    StatusMessage: Hash[Integer, String]
+    CodeToError: Hash[untyped, untyped]
+
+    def reason_phrase: (untyped code) -> String
+                     | (untyped code) -> String
+                     | (untyped code) -> String
+    def info?: (untyped code) -> untyped
+             | (untyped code) -> untyped
+             | (untyped code) -> untyped
+    def success?: (untyped code) -> untyped
+                | (untyped code) -> untyped
+                | (untyped code) -> untyped
+    def redirect?: (untyped code) -> untyped
+                 | (untyped code) -> untyped
+                 | (untyped code) -> untyped
+    def error?: (untyped code) -> untyped
+              | (untyped code) -> untyped
+              | (untyped code) -> untyped
+    def client_error?: (untyped code) -> untyped
+                     | (untyped code) -> untyped
+                     | (untyped code) -> untyped
+    def server_error?: (untyped code) -> untyped
+                     | (untyped code) -> untyped
+                     | (untyped code) -> untyped
+    def self.[]: (untyped code) -> nil
+               | (untyped code) -> nil
+               | (untyped code) -> nil
+    def self.reason_phrase: (untyped code) -> String
+                          | (untyped code) -> String
+                          | (untyped code) -> String
+    def self.info?: (untyped code) -> untyped
+                  | (untyped code) -> untyped
+                  | (untyped code) -> untyped
+    def self.success?: (untyped code) -> untyped
+                     | (untyped code) -> untyped
+                     | (untyped code) -> untyped
+    def self.redirect?: (untyped code) -> untyped
+                      | (untyped code) -> untyped
+                      | (untyped code) -> untyped
+    def self.error?: (untyped code) -> untyped
+                   | (untyped code) -> untyped
+                   | (untyped code) -> untyped
+    def self.client_error?: (untyped code) -> untyped
+                          | (untyped code) -> untyped
+                          | (untyped code) -> untyped
+    def self.server_error?: (untyped code) -> untyped
+                          | (untyped code) -> untyped
+                          | (untyped code) -> untyped
+
+    class Status < StandardError
+      def code: -> untyped
+              | -> untyped
+              | -> untyped
+      def reason_phrase: -> untyped
+                       | -> untyped
+                       | -> untyped
+      alias to_i code
+    end
+
+    class Info < Status
+    end
+
+    class Success < Status
+    end
+
+    class Redirect < Status
+    end
+
+    class Error < Status
+    end
+
+    class ClientError < Error
+    end
+
+    class ServerError < Error
+    end
+
+    class EOFError < StandardError
+    end
+  end
+
+  class HTTPRequest
+    BODY_CONTAINABLE_METHODS: [String, String]
+    MAX_URI_LENGTH: Integer
+    MAX_HEADER_LENGTH: Integer
+    PrivateNetworkRegexp: Regexp
+    @config: untyped
+    @buffer_size: untyped
+    @logger: untyped
+    @port: Integer?
+    @host: String?
+    @query: Hash[String, HTTPUtils::FormData?]?
+    @form_data: nil
+    @body: String
+    @remaining_size: (Complex | Float | Integer | Rational)?
+    @socket: nil
+    @forwarded_for: String?
+    @forwarded_server: String?
+    @forwarded_port: Integer?
+    @forwarded_host: String?
+    @forwarded_proto: String?
+    @request_bytes: untyped
+    @body_tmp: Array[untyped]
+    @body_rd: Fiber
+
+    attr_reader request_line: nil
+    attr_reader request_method: String?
+    attr_reader unparsed_uri: String?
+    attr_reader http_version: HTTPVersion?
+    attr_reader request_uri: URI::Generic?
+    attr_reader path: String?
+    attr_accessor script_name: String?
+    attr_accessor path_info: String?
+    attr_accessor query_string: String?
+    attr_reader raw_header: Array[untyped]
+    attr_reader header: Hash[String?, Array[String]]?
+    attr_reader cookies: Array[Cookie?]
+    attr_reader accept: Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?]
+    attr_reader accept_charset: Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?]
+    attr_reader accept_encoding: Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?]
+    attr_reader accept_language: Array[(Array[(Array[untyped] | Float | String)?] | Float | String)?]
+    attr_accessor user: nil
+    attr_reader addr: Array[untyped]?
+    attr_reader peeraddr: Array[untyped]?
+    attr_reader attributes: Hash[untyped, untyped]
+    attr_reader keep_alive: bool
+    attr_reader request_time: Time?
+    def initialize: (untyped config) -> void
+    def parse: (?nil socket) -> bool?
+    def continue: -> Array[String]?
+    def body: ?{ (nil) -> nil } -> String?
+    def body_reader: -> HTTPRequest
+    def readpartial: (untyped size, ?String buf) -> String
+    def query: -> Hash[String, HTTPUtils::FormData?]?
+    def content_length: -> Integer
+    def content_type: -> String?
+    def []: (String header_name) -> String?
+    def each: ?{ (String?, String?) -> String? } -> Hash[String?, Array[String]]?
+    def host: -> String?
+    def port: -> Integer?
+    def server_name: -> String
+    def remote_ip: -> String?
+    def ssl?: -> bool
+    def keep_alive?: -> bool
+    def to_s: -> nil
+    def fixup: -> ((String | false)?)
+    def meta_vars: -> Hash[String, String?]
+
+    private
+    def read_request_line: (nil socket) -> HTTPVersion
+    def read_header: (nil socket) -> Hash[String?, Array[String]]
+    def parse_uri: (String? str, ?String scheme) -> URI::Generic
+    def parse_host_request_line: (String? host) -> (Array[String] | String)
+    def read_body: (nil socket, Proc | ^(nil) -> nil block) -> String?
+    def read_chunk_size: (untyped socket) -> [Integer, String]
+    def read_chunked: (untyped socket, Proc | ^(nil) -> nil block) -> Integer
+    def _read_data: (untyped io, :gets | :read method, *(Complex | Float | Integer | Rational | String)? arg) -> nil
+    def read_line: (untyped io, ?Integer size) -> nil
+    def read_data: (untyped io, (Complex | Float | Integer | Rational)? size) -> nil
+    def parse_query: -> Hash[String, HTTPUtils::FormData?]
+    def setup_forwarded_info: -> String?
+  end
+
+  class HTTPResponse
+    @buffer_size: untyped
+    @logger: untyped
+    @chunked: bool
+    @bodytempfile: File?
+
+    attr_reader http_version: HTTPVersion
+    attr_reader status: untyped
+    attr_reader header: Hash[String, String]
+    attr_reader cookies: Array[untyped]
+    attr_accessor reason_phrase: String?
+    attr_accessor body: File | String
+    attr_accessor request_method: String?
+    attr_accessor request_uri: URI::Generic?
+    attr_accessor request_http_version: HTTPVersion?
+    attr_accessor filename: nil
+    attr_accessor keep_alive: bool
+    attr_reader config: untyped
+    attr_reader sent_size: Complex | Float | Integer | Rational
+    attr_accessor upgrade: untyped
+    def initialize: (untyped config) -> void
+    def status_line: -> String
+    def status=: (untyped status) -> String
+    def []: (String field) -> String?
+    def []=: (String field, String value) -> String
+    def content_length: -> Integer?
+    def content_length=: (untyped len) -> untyped
+    def content_type: -> String?
+    def content_type=: (untyped `type`) -> untyped
+    def each: -> Hash[String, String]
+    def chunked?: -> bool
+    def chunked=: (untyped val) -> bool
+    def keep_alive?: -> bool
+    def upgrade!: (untyped protocol) -> false
+    def send_response: (untyped socket) -> ((Integer | false)?)
+    def setup_header: -> String?
+    def make_body_tempfile: -> String?
+    def remove_body_tempfile: -> nil
+    def send_header: (untyped socket) -> nil
+    def send_body: (untyped socket) -> Integer?
+    def set_redirect: (untyped status, untyped url) -> bot
+    def set_error: (nil ex, ?bool backtrace) -> (File | String)
+
+    private
+    def check_header: (String header_value) -> String
+    def error_body: (bool backtrace, nil ex, String? host, Integer? port) -> (File | String)
+    def send_body_io: (untyped socket) -> nil
+    def send_body_string: (untyped socket) -> Integer?
+    def send_body_proc: (untyped socket) -> Integer?
+    def _write_data: (untyped socket, untyped data) -> untyped
+
+    class InvalidHeader < StandardError
+    end
+
+    class ChunkedWrapper
+      @socket: untyped
+      @resp: HTTPResponse
+
+      def initialize: (untyped socket, HTTPResponse resp) -> void
+      def write: (untyped buf) -> Integer
+      def <<: (*untyped buf) -> ChunkedWrapper
+    end
+  end
+
+  module HTTPServlet
+    class HTTPServletError < StandardError
+    end
+
+    class AbstractServlet
+      @config: HTTPServer
+      @server: HTTPServer
+      @logger: untyped
+      @options: Array[untyped]
+
+      def self.get_instance: (HTTPServer server, *untyped options) -> (AbstractServlet | DefaultFileHandler | FileHandler)
+      def initialize: (HTTPServer server, *untyped options) -> void
+      def service: (HTTPRequest req, HTTPResponse res) -> untyped
+      def do_GET: (untyped req, untyped res) -> bot
+      def do_HEAD: (untyped req, untyped res) -> bot
+      def do_OPTIONS: (untyped req, untyped res) -> String
+
+      private
+      def redirect_to_directory_uri: (untyped req, untyped res) -> nil
+    end
+
+    class DefaultFileHandler < AbstractServlet
+      @local_path: untyped
+
+      def initialize: (HTTPServer server, untyped local_path) -> void
+      def do_GET: (untyped req, untyped res) -> untyped
+      def not_modified?: (untyped req, untyped res, Time mtime, untyped etag) -> bool
+      def multipart_body: (File body, Array[untyped] parts, String boundary, String mtype, Integer filesize) -> Proc
+      def make_partial_content: (untyped req, untyped res, untyped filename, Integer filesize) -> (File | Proc)
+      def prepare_range: (Range range, Integer filesize) -> ([Complex | Float | Integer | Rational, Complex | Float | Integer | Rational])
+    end
+
+    class FileHandler < AbstractServlet
+      HandlerTable: Hash[untyped, untyped]
+      @root: String
+      @options: {NondisclosureName: [String, String], FancyIndexing: false, HandlerTable: Hash[untyped, untyped], HandlerCallback: nil, DirectoryCallback: nil, FileCallback: nil, UserDir: nil, AcceptableLanguages: Array[untyped]}
+
+      def self.add_handler: (String suffix, singleton(CGIHandler) | singleton(ERBHandler) handler) -> (singleton(CGIHandler) | singleton(ERBHandler))
+      def self.remove_handler: (untyped suffix) -> nil
+      def initialize: (HTTPServer server, untyped root, ?Hash[untyped, untyped] options, ?{NondisclosureName: [String, String], FancyIndexing: false, HandlerTable: Hash[untyped, untyped], HandlerCallback: nil, DirectoryCallback: nil, FileCallback: nil, UserDir: nil, AcceptableLanguages: Array[untyped]} default) -> void
+      def set_filesystem_encoding: (untyped str) -> untyped
+      def service: (HTTPRequest req, HTTPResponse res) -> untyped
+      def do_GET: (untyped req, untyped res) -> nil
+      def do_POST: (untyped req, untyped res) -> nil
+      def do_OPTIONS: (untyped req, untyped res) -> String?
+
+      private
+      def trailing_pathsep?: (String? path) -> bool
+      def prevent_directory_traversal: (HTTPRequest req, HTTPResponse res) -> String
+      def exec_handler: (untyped req, untyped res) -> bool
+      def get_handler: (untyped req, untyped res) -> singleton(DefaultFileHandler)
+      def set_filename: (untyped req, untyped res) -> bool
+      def check_filename: (untyped req, untyped res, String name) -> nil
+      def shift_path_info: (untyped req, untyped res, untyped path_info, ?String? base) -> nil
+      def search_index_file: (untyped req, untyped res) -> String?
+      def search_file: (untyped req, untyped res, String basename) -> String?
+      def call_callback: (:DirectoryCallback | :FileCallback | :HandlerCallback callback_name, untyped req, untyped res) -> nil
+      def windows_ambiguous_name?: (String name) -> bool
+      def nondisclosure_name?: (String name) -> bool
+      def set_dir_list: (untyped req, untyped res) -> untyped
+    end
+
+    class CGIHandler < AbstractServlet
+      Ruby: String
+      CGIRunner: String
+      CGIRunnerArray: [String, String]
+      @script_filename: untyped
+      @tempdir: untyped
+      @cgicmd: Array[String] | String
+
+      def initialize: (untyped server, untyped name) -> void
+      def do_GET: (untyped req, untyped res) -> String?
+      alias do_POST do_GET
+    end
+
+    class ERBHandler < AbstractServlet
+      @script_filename: untyped
+
+      def initialize: (untyped server, untyped name) -> void
+      def do_GET: (untyped req, untyped res) -> String
+      alias do_POST do_GET
+
+      private
+      def evaluate: (ERB erb, untyped servlet_request, untyped servlet_response) -> Module
+    end
+
+    class ProcHandler < AbstractServlet
+      @proc: nil
+
+      def get_instance: (HTTPServer server, *untyped options) -> ProcHandler
+      def initialize: (nil proc) -> void
+      def do_GET: (untyped request, untyped response) -> untyped
+      alias do_POST do_GET
+      alias do_PUT do_GET
+    end
+  end
+
+  class HTTPServerError < ServerError
+  end
+
+  class HTTPServer < GenericServer
+    @http_version: HTTPVersion
+    @mount_tab: MountTable
+    @virtual_hosts: Array[untyped]
+
+    def initialize: (?Hash[untyped, untyped] config, ?Hash[untyped, untyped] default) -> void
+    def run: (untyped sock) -> nil
+    def service: (HTTPRequest req, HTTPResponse res) -> untyped
+    def do_OPTIONS: (HTTPRequest req, HTTPResponse res) -> String
+    def mount: (String dir, HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler) servlet, *untyped options) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]])
+    def mount_proc: (untyped dir, ?nil proc) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]])
+    def unmount: (untyped dir) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]]?)
+    alias umount unmount
+    def search_servlet: (String? path) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped], String, String])
+    def virtual_host: (untyped server) -> untyped
+    def lookup_server: (HTTPRequest req) -> nil
+    def access_log: (untyped config, HTTPRequest req, HTTPResponse res) -> untyped
+    def create_request: (untyped with_webrick_config) -> HTTPRequest
+    def create_response: (untyped with_webrick_config) -> HTTPResponse
+
+    class MountTable
+      @tab: Hash[String, [HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]]]
+      @scanner: Regexp
+
+      def initialize: -> void
+      def []: (String dir) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]])
+      def []=: (String dir, [HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]] val) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]])
+      def delete: (untyped dir) -> ([HTTPServlet::ProcHandler | singleton(HTTPServlet::FileHandler), Array[untyped]]?)
+      def scan: (String? path) -> [String, String]
+
+      private
+      def compile: -> Regexp
+      def normalize: (String dir) -> String
+    end
+  end
+
+  module HTTPAuth
+    def _basic_auth: (untyped req, untyped res, untyped realm, String req_field, String res_field, untyped err_type, nil block) -> nil
+    def self._basic_auth: (untyped req, untyped res, untyped realm, String req_field, String res_field, untyped err_type, nil block) -> nil
+    def basic_auth: (untyped req, untyped res, untyped realm) -> nil
+    def self.basic_auth: (untyped req, untyped res, untyped realm) -> nil
+    def proxy_basic_auth: (untyped req, untyped res, untyped realm) -> nil
+    def self.proxy_basic_auth: (untyped req, untyped res, untyped realm) -> nil
+
+    module Authenticator
+      RequestField: String
+      ResponseField: String
+      ResponseInfoField: String
+      AuthException: untyped
+      AuthScheme: nil
+      @reload_db: untyped
+      @request_field: untyped
+      @response_field: untyped
+      @resp_info_field: untyped
+      @auth_exception: untyped
+      @auth_scheme: untyped
+
+      attr_reader realm: untyped
+      attr_reader userdb: untyped
+      attr_reader logger: Log
+
+      private
+      def check_init: (untyped config) -> untyped
+      def check_scheme: (untyped req) -> String?
+      def log: (:error | :info meth, String fmt, *String? args) -> untyped
+      def error: (String fmt, *String? args) -> nil
+      def info: (String fmt, *String? args) -> nil
+    end
+
+    module ProxyAuthenticator
+      RequestField: String
+      ResponseField: String
+      InfoField: String
+      AuthException: untyped
+    end
+
+    class BasicAuth
+      AuthScheme: String
+      include Authenticator
+      @config: {AutoReloadUserDB: true}
+      @reload_db: untyped
+      @request_field: untyped
+      @response_field: untyped
+      @resp_info_field: untyped
+      @auth_exception: untyped
+      @auth_scheme: untyped
+
+      def self.make_passwd: (untyped realm, untyped user, untyped pass) -> String
+      attr_reader realm: untyped
+      attr_reader userdb: untyped
+      attr_reader logger: Log
+      def initialize: (untyped config, ?{AutoReloadUserDB: true} default) -> void
+      def authenticate: (untyped req, untyped res) -> String?
+      def challenge: (untyped req, untyped res) -> bot
+    end
+
+    class ProxyBasicAuth < BasicAuth
+      include ProxyAuthenticator
+    end
+
+    class DigestAuth
+      AuthScheme: String
+      MustParams: [String, String, String, String, String]
+      MustParamsAuth: [String, String]
+      include Authenticator
+      @reload_db: untyped
+      @request_field: untyped
+      @response_field: untyped
+      @resp_info_field: untyped
+      @auth_exception: untyped
+      @auth_scheme: untyped
+      @config: {Algorithm: String, Domain: nil, Qop: [String], UseOpaque: true, UseNextNonce: false, CheckNc: false, UseAuthenticationInfoHeader: true, AutoReloadUserDB: true, NonceExpirePeriod: Integer, NonceExpireDelta: Integer, InternetExplorerHack: true, OperaHack: true}
+      @domain: nil
+      @use_opaque: true
+      @use_next_nonce: false
+      @check_nc: false
+      @use_auth_info_header: true
+      @nonce_expire_period: Integer
+      @nonce_expire_delta: Integer
+      @internet_explorer_hack: true
+      @h: untyped
+      @instance_key: untyped
+      @opaques: Hash[untyped, untyped]
+      @last_nonce_expire: Time
+      @mutex: Thread::Mutex
+      @opaque: bot
+
+      attr_reader algorithm: String
+      attr_reader qop: [String]
+      def self.make_passwd: (untyped realm, untyped user, untyped pass) -> untyped
+      def initialize: (untyped config, ?{Algorithm: String, Domain: nil, Qop: [String], UseOpaque: true, UseNextNonce: false, CheckNc: false, UseAuthenticationInfoHeader: true, AutoReloadUserDB: true, NonceExpirePeriod: Integer, NonceExpireDelta: Integer, InternetExplorerHack: true, OperaHack: true} default) -> void
+      def authenticate: (untyped req, untyped res) -> true
+      def challenge: (untyped req, untyped res, ?bool stale) -> bot
+
+      private
+      def _authenticate: (untyped req, untyped res) -> (:nonce_is_stale | bool)
+      def split_param_value: (String string) -> Hash[String, String]
+      def generate_next_nonce: (untyped req) -> String
+      def check_nonce: (untyped req, Hash[String, String] auth_req) -> bool
+      def generate_opaque: (untyped req) -> String
+      def check_opaque: (untyped opaque_struct, untyped req, untyped auth_req) -> bool
+      def check_uri: (untyped req, Hash[String, String] auth_req) -> bool
+      def hexdigest: (*(Integer | String)? args) -> untyped
+
+      class OpaqueInfo < Struct[untyped]
+        attr_accessor time(): untyped
+        attr_accessor nonce(): nil
+        attr_accessor nc(): String
+      end
+    end
+
+    class ProxyDigestAuth < DigestAuth
+      include ProxyAuthenticator
+
+      private
+      def check_uri: (untyped req, untyped auth_req) -> true
+    end
+
+    module UserDB
+      attr_accessor auth_type: singleton(BasicAuth) | singleton(DigestAuth)
+      def make_passwd: (untyped realm, untyped user, untyped pass) -> String
+      def set_passwd: (untyped realm, untyped user, untyped pass) -> untyped
+      def get_passwd: (untyped realm, untyped user, ?false reload_db) -> String
+    end
+
+    class Htpasswd
+      include UserDB
+      @path: untyped
+      @mtime: Time
+      @passwd: Hash[untyped, String]
+      @password_hash: :crypt?
+
+      def initialize: (untyped path, ?password_hash: nil) -> void
+      def reload: -> Time?
+      def flush: (?nil output) -> true
+      def get_passwd: (untyped realm, untyped user, untyped reload_db) -> String?
+      def set_passwd: (untyped realm, untyped user, untyped pass) -> String
+      def delete_passwd: (untyped realm, untyped user) -> String?
+      def each: { ([untyped, String?]) -> nil } -> Array[untyped]
+    end
+
+    class Htdigest
+      include UserDB
+      @path: untyped
+      @mtime: Time
+      @digest: Hash[untyped, untyped]
+      @mutex: Thread::Mutex
+
+      def initialize: (untyped path) -> void
+      def reload: -> Time?
+      def flush: (?nil output) -> true
+      def get_passwd: (untyped realm, untyped user, untyped reload_db) -> nil
+      def set_passwd: (untyped realm, untyped user, untyped pass) -> String
+      def delete_passwd: (untyped realm, untyped user) -> nil
+      def each: { -> nil } -> Array[untyped]
+    end
+
+    class Htgroup
+      @path: untyped
+      @mtime: Time
+      @group: Hash[untyped, Array[untyped]]
+
+      def initialize: (untyped path) -> void
+      def reload: -> Time?
+      def flush: (?nil output) -> (Array[untyped] | Integer)
+      def members: (untyped group) -> Array[untyped]
+      def add: (untyped group, untyped members) -> Array[untyped]
+    end
+  end
+end
