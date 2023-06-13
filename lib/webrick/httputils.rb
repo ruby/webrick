@@ -157,13 +157,13 @@ module WEBrick
       field = nil
       raw.each_line{|line|
         case line
-        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):\s*(.*?)\s*\z/om
-          field, value = $1, $2
+        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):(.*?)\z/om
+          field, value = $1, $2.strip
           field.downcase!
           header[field] = [] unless header.has_key?(field)
           header[field] << value
-        when /^\s+(.*?)\s*\z/om
-          value = $1
+        when /^\s+(.*?)/om
+          value = line.strip
           unless field
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
@@ -183,7 +183,7 @@ module WEBrick
     # Splits a header value +str+ according to HTTP specification.
 
     def split_header_value(str)
-      str.scan(%r'\G((?:"(?:\\.|[^"])+?"|[^",]+)+)
+      str.scan(%r'\G((?:"(?:\\.|[^"])+?"|[^",]++)+)
                     (?:,\s*|\Z)'xn).flatten
     end
     module_function :split_header_value
