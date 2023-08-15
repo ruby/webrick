@@ -81,6 +81,31 @@ GET /
     }
   end
 
+  def test_invalid_content_length_header
+    ['', ' ', ' +1', ' -1', ' a'].each do |cl|
+      msg = <<-_end_of_message_
+        GET / HTTP/1.1
+        Content-Length:#{cl}
+      _end_of_message_
+      req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+      assert_raise(WEBrick::HTTPStatus::BadRequest){
+        req.parse(StringIO.new(msg.gsub(/^ {8}/, "")))
+      }
+    end
+  end
+
+  def test_duplicate_content_length_header
+    msg = <<-_end_of_message_
+      GET / HTTP/1.1
+      Content-Length: 1
+      Content-Length: 2
+    _end_of_message_
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    assert_raise(WEBrick::HTTPStatus::BadRequest){
+      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    }
+  end
+
   def test_parse_headers
     msg = <<-_end_of_message_
       GET /path HTTP/1.1
