@@ -479,6 +479,14 @@ module WEBrick
         end
       end
       @header = HTTPUtils::parse_header(@raw_header.join)
+
+      if (content_length = @header['content-length']) && content_length.length != 0
+        if content_length.length > 1
+          raise HTTPStatus::BadRequest, "multiple content-length request headers"
+        elsif !/\A\d+\z/.match?(content_length[0])
+          raise HTTPStatus::BadRequest, "invalid content-length request header"
+        end
+      end
     end
 
     def parse_uri(str, scheme="http")
