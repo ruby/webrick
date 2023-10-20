@@ -4,3 +4,4 @@ gemspec
 
 gem "rake"
 gem "test-unit"
+gem "test-unit-ruby-core"
