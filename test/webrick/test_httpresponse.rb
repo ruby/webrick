@@ -97,14 +97,14 @@ module WEBrick
 
     def test_set_redirect_response_splitting
       url = "malicious\r\nCookie: cracked_indicator_for_test"
-      assert_raises(URI::InvalidURIError) do
+      assert_raise(URI::InvalidURIError) do
         res.set_redirect(WEBrick::HTTPStatus::MultipleChoices, url)
       end
     end
 
     def test_set_redirect_html_injection
       url = 'http://example.com////?a</a><head></head><body><img src=1></body>'
-      assert_raises(WEBrick::HTTPStatus::MultipleChoices) do
+      assert_raise(WEBrick::HTTPStatus::MultipleChoices) do
         res.set_redirect(WEBrick::HTTPStatus::MultipleChoices, url)
       end
       res.status = 300
