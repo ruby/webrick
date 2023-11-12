@@ -542,7 +542,7 @@ module WEBrick
 
     def read_chunk_size(socket)
       line = read_line(socket)
-      if /^([0-9a-fA-F]+)(?:;(\S+))?/ =~ line
+      if /\A([0-9a-fA-F]+)(?:;(\S+(?:=\S+)?))?\r\n\z/ =~ line
         chunk_size = $1.hex
         chunk_ext = $2
         [ chunk_size, chunk_ext ]
