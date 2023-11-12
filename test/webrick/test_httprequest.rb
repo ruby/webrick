@@ -289,6 +289,31 @@ GET /
     assert_equal(expect, dst.string)
   end
 
+  def test_bad_chunked
+    crlf = "\x0d\x0a"
+    expect = File.binread(__FILE__).freeze
+    msg = <<-_end_of_message_
+      POST /path HTTP/1.1\r
+      Transfer-Encoding: chunked\r
+      \r
+      01x1\r
+      \r
+      1
+    _end_of_message_
+    msg.gsub!(/^ {6}/, "")
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    assert_raise(WEBrick::HTTPStatus::BadRequest){ req.body }
+
+    # chunked req.body_reader
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    dst = StringIO.new
+    assert_raise(WEBrick::HTTPStatus::BadRequest) do
+      IO.copy_stream(req.body_reader, dst)
+    end
+  end
+
   def test_forwarded
     msg = <<-_end_of_message_
       GET /foo HTTP/1.1
