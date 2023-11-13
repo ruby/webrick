@@ -290,8 +290,6 @@ GET /
   end
 
   def test_bad_chunked
-    crlf = "\x0d\x0a"
-    expect = File.binread(__FILE__).freeze
     msg = <<-_end_of_message_
       POST /path HTTP/1.1\r
       Transfer-Encoding: chunked\r
