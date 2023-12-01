@@ -312,6 +312,17 @@ GET /
     end
   end
 
+  def test_null_byte_in_header
+    msg = <<-_end_of_message_
+      POST /path HTTP/1.1\r
+      Evil: evil\x00\r
+      \r
+    _end_of_message_
+    msg.gsub!(/^ {6}/, "")
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    assert_raise(WEBrick::HTTPStatus::BadRequest){ req.parse(StringIO.new(msg)) }
+  end
+
   def test_forwarded
     msg = <<-_end_of_message_
       GET /foo HTTP/1.1

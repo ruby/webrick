@@ -475,6 +475,9 @@ module WEBrick
           if (@request_bytes += line.bytesize) > MAX_HEADER_LENGTH
             raise HTTPStatus::RequestEntityTooLarge, 'headers too large'
           end
+          if line.include?("\x00")
+            raise HTTPStatus::BadRequest, 'null byte in header'
+          end
           @raw_header << line
         end
       end
