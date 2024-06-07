@@ -318,7 +318,7 @@ module WEBrick
     def [](header_name)
       if @header
         value = @header[header_name.downcase]
-        value.empty? ? nil : value.join(", ")
+        value.empty? ? nil : value.join
       end
     end
 
@@ -329,7 +329,7 @@ module WEBrick
       if @header
         @header.each{|k, v|
           value = @header[k]
-          yield(k, value.empty? ? nil : value.join(", "))
+          yield(k, value.empty? ? nil : value.join)
         }
       end
     end

@@ -152,6 +152,22 @@ module WEBrick
     # Parses an HTTP header +raw+ into a hash of header fields with an Array
     # of values.
 
+    class SplitHeader < Array
+      def join(separator = ", ")
+        super
+      end
+    end
+
+    class CookieHeader < Array
+      def join(separator = "; ")
+        super
+      end
+    end
+
+    HEADER_CLASSES = Hash.new(SplitHeader).update({
+      "cookie" => CookieHeader,
+    })
+
     def parse_header(raw)
       header = Hash.new([].freeze)
       field = nil
@@ -160,7 +176,7 @@ module WEBrick
         when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):(.*?)\z/om
           field, value = $1, $2.strip
           field.downcase!
-          header[field] = [] unless header.has_key?(field)
+          header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
           header[field] << value
         when /^\s+(.*?)/om
           value = line.strip
