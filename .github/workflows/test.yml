@@ -7,7 +7,6 @@ jobs:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
       engine: cruby
-      # Bump.
       min_version: 2.4
 
   test:
@@ -16,7 +15,7 @@ jobs:
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-13 ]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
