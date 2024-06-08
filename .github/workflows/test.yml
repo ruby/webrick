@@ -7,6 +7,7 @@ jobs:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
       engine: cruby
+      # Bump.
       min_version: 2.4
 
   test:
