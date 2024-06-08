@@ -17,11 +17,13 @@ jobs:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest, macos-latest ]
+        # CRuby < 2.6 does not support macos-arm64, so test those on amd64 instead
         exclude:
-          - os: macos-latest
-            ruby: "2.4"
-          - os: macos-latest
-            ruby: "2.5"
+        - { os: macos-latest, ruby: '2.4' }
+        - { os: macos-latest, ruby: '2.5' }
+        include:
+        - { os: macos-13, ruby: '2.4' }
+        - { os: macos-13, ruby: '2.5' }
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
