@@ -532,4 +532,11 @@ GET /
       req.parse(StringIO.new(""))
     }
   end
+
+  def test_cookie_join
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new("GET / HTTP/1.1\r\ncookie: a=1\r\ncookie: b=2\r\n\r\n"))
+    assert_equal 2, req.cookies.length
+    assert_equal 'a=1; b=2', req['cookie']
+  end
 end
