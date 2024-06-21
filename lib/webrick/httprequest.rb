@@ -574,7 +574,11 @@ module WEBrick
           block.call(data)
         end while (chunk_size -= sz) > 0
 
-        read_line(socket)                    # skip CRLF
+        line = read_line(socket)              # skip CRLF
+        unless line == "\r\n"
+          raise HTTPStatus::BadRequest, "extra data after chunk `#{line}'."
+        end
+
         chunk_size, = read_chunk_size(socket)
       end
       read_header(socket)                    # trailer + CRLF
