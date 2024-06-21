@@ -423,6 +423,29 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     end
   end
 
+  def test_bad_chunked_extra_data
+    msg = <<~HTTP
+      POST /path HTTP/1.1\r
+      Transfer-Encoding: chunked\r
+      \r
+      3\r
+      ABCthis-all-gets-ignored\r
+      0\r
+      \r
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    assert_raise(WEBrick::HTTPStatus::BadRequest){ req.body }
+
+    # chunked req.body_reader
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    dst = StringIO.new
+    assert_raise(WEBrick::HTTPStatus::BadRequest) do
+      IO.copy_stream(req.body_reader, dst)
+    end
+  end
+
   def test_null_byte_in_header
     msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path HTTP/1.1\r
