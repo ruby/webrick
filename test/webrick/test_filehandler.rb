@@ -33,7 +33,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
       Range: #{range_spec}
 
     END_OF_REQUEST
-    return StringIO.new(msg.gsub(/^ {6}/, ""))
+    return StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n"))
   end
 
   def make_range_response(file, range_spec)
