@@ -173,16 +173,18 @@ module WEBrick
       field = nil
       raw.each_line{|line|
         case line
-        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):(.*?)\z/om
-          field, value = $1, $2.strip
+        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/om
+          field, value = $1, $2
           field.downcase!
           header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
           header[field] << value
-        when /^\s+(.*?)/om
-          value = line.strip
+        when /^\s+([^\r\n\0]*?)\r\n/om
           unless field
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
+          value = line
+          value.lstrip!
+          value.slice!(-2..-1)
           header[field][-1] << " " << value
         else
           raise HTTPStatus::BadRequest, "bad header '#{line}'."

@@ -458,7 +458,7 @@ module WEBrick
       end
 
       @request_time = Time.now
-      if /^(\S+)\s+(\S++)(?:\s+HTTP\/(\d+\.\d+))?\r?\n/mo =~ @request_line
+      if /^(\S+) (\S++)(?: HTTP\/(\d+\.\d+))?\r\n/mo =~ @request_line
         @request_method = $1
         @unparsed_uri   = $2
         @http_version   = HTTPVersion.new($3 ? $3 : "0.9")
@@ -471,7 +471,7 @@ module WEBrick
     def read_header(socket)
       if socket
         while line = read_line(socket)
-          break if /\A(#{CRLF}|#{LF})\z/om =~ line
+          break if /\A#{CRLF}\z/om =~ line
           if (@request_bytes += line.bytesize) > MAX_HEADER_LENGTH
             raise HTTPStatus::RequestEntityTooLarge, 'headers too large'
           end
