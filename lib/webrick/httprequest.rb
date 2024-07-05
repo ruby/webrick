@@ -470,8 +470,13 @@ module WEBrick
 
     def read_header(socket)
       if socket
+        end_of_headers = false
+
         while line = read_line(socket)
-          break if /\A#{CRLF}\z/om =~ line
+          if line == CRLF
+            end_of_headers = true
+            break
+          end
           if (@request_bytes += line.bytesize) > MAX_HEADER_LENGTH
             raise HTTPStatus::RequestEntityTooLarge, 'headers too large'
           end
@@ -480,6 +485,9 @@ module WEBrick
           end
           @raw_header << line
         end
+
+        # Allow if @header already set to support chunked trailers
+        raise HTTPStatus::EOFError unless end_of_headers || @header
       end
       @header = HTTPUtils::parse_header(@raw_header.join)
 
