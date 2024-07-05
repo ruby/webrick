@@ -178,12 +178,12 @@ module WEBrick
           field.downcase!
           header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
           header[field] << value
-        when /^\s+([^\r\n\0]*?)\r\n/om
+        when /^[ \t]+([^\r\n\0]*?)\r\n/om
           unless field
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
           value = line
-          value.lstrip!
+          value.gsub!(/\A[ \t]+/, '')
           value.slice!(-2..-1)
           header[field][-1] << " " << value
         else
@@ -191,7 +191,10 @@ module WEBrick
         end
       }
       header.each{|key, values|
-        values.each(&:strip!)
+        values.each{|value|
+          value.gsub!(/\A[ \t]+/, '')
+          value.gsub!(/[ \t]+\z/, '')
+        }
       }
       header
     end
@@ -202,7 +205,7 @@ module WEBrick
 
     def split_header_value(str)
       str.scan(%r'\G((?:"(?:\\.|[^"])+?"|[^",]++)+)
-                    (?:,\s*|\Z)'xn).flatten
+                    (?:,[ \t]*|\Z)'xn).flatten
     end
     module_function :split_header_value
 
@@ -230,9 +233,9 @@ module WEBrick
     def parse_qvalues(value)
       tmp = []
       if value
-        parts = value.split(/,\s*/)
+        parts = value.split(/,[ \t]*/)
         parts.each {|part|
-          if m = %r{^([^\s,]+?)(?:;\s*q=(\d+(?:\.\d+)?))?$}.match(part)
+          if m = %r{^([^ \t,]+?)(?:;[ \t]*q=(\d+(?:\.\d+)?))?$}.match(part)
             val = m[1]
             q = (m[2] or 1).to_f
             tmp.push([val, q])
@@ -331,8 +334,8 @@ module WEBrick
         elsif str == CRLF
           @header = HTTPUtils::parse_header(@raw_header.join)
           if cd = self['content-disposition']
-            if /\s+name="(.*?)"/ =~ cd then @name = $1 end
-            if /\s+filename="(.*?)"/ =~ cd then @filename = $1 end
+            if /[ \t]+name="(.*?)"/ =~ cd then @name = $1 end
+            if /[ \t]+filename="(.*?)"/ =~ cd then @filename = $1 end
           end
         else
           @raw_header << str

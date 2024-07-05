@@ -118,6 +118,27 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     }
   end
 
+  def test_header_vt_ff_whitespace
+    msg = <<~HTTP
+      GET / HTTP/1.1\r
+      Foo: \x0b1\x0c\r
+      \r
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    assert_equal("\x0b1\x0c", req["Foo"])
+
+    msg = <<~HTTP
+      GET / HTTP/1.1\r
+      Foo: \x0b1\x0c\r
+       \x0b2\x0c\r
+      \r
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    assert_equal("\x0b1\x0c \x0b2\x0c", req["Foo"])
+  end
+
   def test_bare_cr_request_line
     msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1\r\r
