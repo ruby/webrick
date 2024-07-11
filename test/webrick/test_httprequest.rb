@@ -10,21 +10,21 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
   end
 
   def test_simple_request
-    msg = <<-_end_of_message_
-GET /\r
-    _end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      GET /
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert(req.meta_vars) # fails if @header was not initialized and iteration is attempted on the nil reference
   end
 
   def test_parse_09
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /
       foobar    # HTTP/0.9 request don't have header nor entity body.
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal("GET", req.request_method)
     assert_equal("/", req.unparsed_uri)
     assert_equal(WEBrick::HTTPVersion.new("0.9"), req.http_version)
@@ -36,12 +36,12 @@ GET /\r
   end
 
   def test_parse_10
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.0
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal("GET", req.request_method)
     assert_equal("/", req.unparsed_uri)
     assert_equal(WEBrick::HTTPVersion.new("1.0"), req.http_version)
@@ -53,12 +53,12 @@ GET /\r
   end
 
   def test_parse_11
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal("GET", req.request_method)
     assert_equal("/path", req.unparsed_uri)
     assert_equal("", req.script_name)
@@ -72,21 +72,21 @@ GET /\r
   end
 
   def test_request_uri_too_large
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /#{"a"*2084} HTTP/1.1
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::RequestURITooLarge){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+      req.parse(StringIO.new(msg))
     }
   end
 
   def test_invalid_content_length_header
     ['', ' ', ' +1', ' -1', ' a'].each do |cl|
-      msg = <<-_end_of_message_
+      msg = <<~HTTP.gsub("\n", "\r\n")
         GET / HTTP/1.1
         Content-Length:#{cl}
-      _end_of_message_
+      HTTP
       req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
       assert_raise(WEBrick::HTTPStatus::BadRequest){
         req.parse(StringIO.new(msg.gsub(/^ {8}/, "").gsub("\n", "\r\n")))
@@ -95,11 +95,11 @@ GET /\r
   end
 
   def test_bare_lf_request_line
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
@@ -107,11 +107,11 @@ GET /\r
   end
 
   def test_bare_lf_header
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1\r
       Content-Length: 0
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
@@ -119,11 +119,11 @@ GET /\r
   end
 
   def test_bare_cr_request_line
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1\r\r
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
@@ -131,11 +131,11 @@ GET /\r
   end
 
   def test_bare_cr_header
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1\r
       Content-Type: foo\rbar\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
@@ -143,41 +143,41 @@ GET /\r
   end
 
   def test_invalid_request_lines
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET  / HTTP/1.1\r
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     }
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /  HTTP/1.1\r
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     }
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /\r HTTP/1.1\r
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     }
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1 \r
       Content-Length: 0\r
       \r
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
@@ -185,19 +185,19 @@ GET /\r
   end
 
   def test_duplicate_content_length_header
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.1
       Content-Length: 1
       Content-Length: 2
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+      req.parse(StringIO.new(msg))
     }
   end
 
   def test_parse_headers
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: test.ruby-lang.org:8080
       Connection: close
@@ -212,9 +212,9 @@ GET /\r
       X-Empty-Header:
 
       foobar
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(
       URI.parse("http://test.ruby-lang.org:8080/path"), req.request_uri)
     assert_equal("test.ruby-lang.org", req.host)
@@ -234,7 +234,7 @@ GET /\r
   end
 
   def test_parse_header2()
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /foo/bar/../baz?q=a HTTP/1.0
       Content-Length: 10
       User-Agent:
@@ -242,9 +242,9 @@ GET /\r
         BAZ
 
       hogehoge
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal("POST", req.request_method)
     assert_equal("/foo/baz", req.path)
     assert_equal("", req.script_name)
@@ -255,58 +255,58 @@ GET /\r
   end
 
   def test_parse_headers3
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: test.ruby-lang.org
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(URI.parse("http://test.ruby-lang.org/path"), req.request_uri)
     assert_equal("test.ruby-lang.org", req.host)
     assert_equal(80, req.port)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: 192.168.1.1
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(URI.parse("http://192.168.1.1/path"), req.request_uri)
     assert_equal("192.168.1.1", req.host)
     assert_equal(80, req.port)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: [fe80::208:dff:feef:98c7]
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(URI.parse("http://[fe80::208:dff:feef:98c7]/path"),
                  req.request_uri)
     assert_equal("[fe80::208:dff:feef:98c7]", req.host)
     assert_equal(80, req.port)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: 192.168.1.1:8080
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(URI.parse("http://192.168.1.1:8080/path"), req.request_uri)
     assert_equal("192.168.1.1", req.host)
     assert_equal(8080, req.port)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
       Host: [fe80::208:dff:feef:98c7]:8080
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     assert_equal(URI.parse("http://[fe80::208:dff:feef:98c7]:8080/path"),
                  req.request_uri)
     assert_equal("[fe80::208:dff:feef:98c7]", req.host)
@@ -315,13 +315,13 @@ GET /\r
 
   def test_parse_get_params
     param = "foo=1;foo=2;foo=3;bar=x"
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path?#{param} HTTP/1.1
       Host: test.ruby-lang.org:8080
 
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     query = req.query
     assert_equal("1", query["foo"])
     assert_equal(["1", "2", "3"], query["foo"].to_ary)
@@ -332,16 +332,16 @@ GET /\r
 
   def test_parse_post_params
     param = "foo=1;foo=2;foo=3;bar=x"
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path?foo=x;foo=y;foo=z;bar=1 HTTP/1.1
       Host: test.ruby-lang.org:8080
       Content-Length: #{param.size}
       Content-Type: application/x-www-form-urlencoded
 
       #{param}
-    _end_of_message_
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+    req.parse(StringIO.new(msg))
     query = req.query
     assert_equal("1", query["foo"])
     assert_equal(["1", "2", "3"], query["foo"].to_ary)
@@ -353,14 +353,12 @@ GET /\r
   def test_chunked
     crlf = "\x0d\x0a"
     expect = File.binread(__FILE__).freeze
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path HTTP/1.1
       Host: test.ruby-lang.org:8080
       Transfer-Encoding: chunked
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     File.open(__FILE__){|io|
       while chunk = io.read(100)
         msg << chunk.size.to_s(16) << crlf
@@ -381,15 +379,14 @@ GET /\r
   end
 
   def test_bad_chunked
-    msg = <<-_end_of_message_
+    msg = <<~HTTP
       POST /path HTTP/1.1\r
       Transfer-Encoding: chunked\r
       \r
       01x1\r
       \r
       1
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_raise(WEBrick::HTTPStatus::BadRequest){ req.body }
@@ -404,18 +401,18 @@ GET /\r
   end
 
   def test_null_byte_in_header
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path HTTP/1.1\r
       Evil: evil\x00\r
       \r
-    _end_of_message_
+    HTTP
     msg.gsub!(/^ {6}/, "")
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){ req.parse(StringIO.new(msg)) }
   end
 
   def test_forwarded
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       User-Agent: w3m/0.5.2
@@ -424,9 +421,7 @@ GET /\r
       X-Forwarded-Server: server.example.com
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server.example.com", req.server_name)
@@ -436,7 +431,7 @@ GET /\r
     assert_equal("123.123.123.123", req.remote_ip)
     assert(!req.ssl?)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       User-Agent: w3m/0.5.2
@@ -445,9 +440,7 @@ GET /\r
       X-Forwarded-Server: server.example.com
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server.example.com", req.server_name)
@@ -457,7 +450,7 @@ GET /\r
     assert_equal("123.123.123.123", req.remote_ip)
     assert(!req.ssl?)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       Client-IP: 234.234.234.234
@@ -468,9 +461,7 @@ GET /\r
       X-Requested-With: XMLHttpRequest
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server.example.com", req.server_name)
@@ -480,7 +471,7 @@ GET /\r
     assert_equal("234.234.234.234", req.remote_ip)
     assert(req.ssl?)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       Client-IP: 234.234.234.234
@@ -491,9 +482,7 @@ GET /\r
       X-Requested-With: XMLHttpRequest
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server1.example.com", req.server_name)
@@ -503,7 +492,7 @@ GET /\r
     assert_equal("234.234.234.234", req.remote_ip)
     assert(req.ssl?)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       Client-IP: 234.234.234.234
@@ -514,9 +503,7 @@ GET /\r
       X-Requested-With: XMLHttpRequest
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server1.example.com", req.server_name)
@@ -526,7 +513,7 @@ GET /\r
     assert_equal("234.234.234.234", req.remote_ip)
     assert(req.ssl?)
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET /foo HTTP/1.1
       Host: localhost:10080
       Client-IP: 234.234.234.234
@@ -537,9 +524,7 @@ GET /\r
       X-Requested-With: XMLHttpRequest
       Connection: Keep-Alive
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert_equal("server1.example.com", req.server_name)
@@ -551,13 +536,11 @@ GET /\r
   end
 
   def test_continue_sent
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path HTTP/1.1
       Expect: 100-continue
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert req['expect']
@@ -569,12 +552,10 @@ GET /\r
   end
 
   def test_continue_not_sent
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path HTTP/1.1
 
-    _end_of_message_
-    msg.gsub!(/^ {6}/, "")
-    msg.gsub!("\n", "\r\n")
+    HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     req.parse(StringIO.new(msg))
     assert !req['expect']
@@ -585,42 +566,42 @@ GET /\r
 
   def test_bad_messages
     param = "foo=1;foo=2;foo=3;bar=x"
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path?foo=x;foo=y;foo=z;bar=1 HTTP/1.1
       Host: test.ruby-lang.org:8080
       Content-Type: application/x-www-form-urlencoded
 
       #{param}
-    _end_of_message_
+    HTTP
     assert_raise(WEBrick::HTTPStatus::LengthRequired){
       req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+      req.parse(StringIO.new(msg))
       req.body
     }
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path?foo=x;foo=y;foo=z;bar=1 HTTP/1.1
       Host: test.ruby-lang.org:8080
       Content-Length: 100000
 
       body is too short.
-    _end_of_message_
+    HTTP
     assert_raise(WEBrick::HTTPStatus::BadRequest){
       req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+      req.parse(StringIO.new(msg))
       req.body
     }
 
-    msg = <<-_end_of_message_
+    msg = <<~HTTP.gsub("\n", "\r\n")
       POST /path?foo=x;foo=y;foo=z;bar=1 HTTP/1.1
       Host: test.ruby-lang.org:8080
       Transfer-Encoding: foobar
 
       body is too short.
-    _end_of_message_
+    HTTP
     assert_raise(WEBrick::HTTPStatus::NotImplemented){
       req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n")))
+      req.parse(StringIO.new(msg))
       req.body
     }
   end

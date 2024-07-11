@@ -28,12 +28,12 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
   end
 
   def make_range_request(range_spec)
-    msg = <<-END_OF_REQUEST
+    msg = <<~HTTP.gsub("\n", "\r\n")
       GET / HTTP/1.0
       Range: #{range_spec}
 
-    END_OF_REQUEST
-    return StringIO.new(msg.gsub(/^ {6}/, "").gsub("\n", "\r\n"))
+    HTTP
+    return StringIO.new(msg)
   end
 
   def make_range_response(file, range_spec)
