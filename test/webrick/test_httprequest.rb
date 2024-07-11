@@ -89,7 +89,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
       HTTP
       req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
       assert_raise(WEBrick::HTTPStatus::BadRequest){
-        req.parse(StringIO.new(msg.gsub(/^ {8}/, "").gsub("\n", "\r\n")))
+        req.parse(StringIO.new(msg))
       }
     end
   end
@@ -102,7 +102,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
   end
 
@@ -114,7 +114,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
   end
 
@@ -125,7 +125,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
       \r
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    req.parse(StringIO.new(msg))
     assert_equal("\x0b1\x0c", req["Foo"])
 
     msg = <<~HTTP
@@ -135,7 +135,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
       \r
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
-    req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+    req.parse(StringIO.new(msg))
     assert_equal("\x0b1\x0c \x0b2\x0c", req["Foo"])
   end
 
@@ -147,7 +147,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
   end
 
@@ -159,7 +159,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
   end
 
@@ -171,7 +171,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
 
     msg = <<~HTTP.gsub("\n", "\r\n")
@@ -181,7 +181,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
 
     msg = <<~HTTP.gsub("\n", "\r\n")
@@ -191,7 +191,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
 
     msg = <<~HTTP.gsub("\n", "\r\n")
@@ -201,7 +201,7 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     HTTP
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){
-      req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
+      req.parse(StringIO.new(msg))
     }
   end
 
@@ -427,7 +427,6 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
       Evil: evil\x00\r
       \r
     HTTP
-    msg.gsub!(/^ {6}/, "")
     req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
     assert_raise(WEBrick::HTTPStatus::BadRequest){ req.parse(StringIO.new(msg)) }
   end
