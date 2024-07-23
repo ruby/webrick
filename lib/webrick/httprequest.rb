@@ -522,9 +522,10 @@ module WEBrick
       return URI::parse(uri.to_s)
     end
 
+    host_pattern = URI::RFC2396_Parser.new.pattern.fetch(:HOST)
+    HOST_PATTERN = /\A(#{host_pattern})(?::(\d+))?\z/n
     def parse_host_request_line(host)
-      pattern = /\A(#{URI::REGEXP::PATTERN::HOST})(?::(\d+))?\z/no
-      host.scan(pattern)[0]
+      host.scan(HOST_PATTERN)[0]
     end
 
     def read_body(socket, block)
