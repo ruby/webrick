@@ -219,6 +219,24 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     }
   end
 
+  def test_content_length_and_transfer_encoding_headers_smuggling
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      POST /user HTTP/1.1
+      Content-Length: 28
+      Transfer-Encoding: chunked
+
+      0
+
+      GET /admin HTTP/1.1
+
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    assert_raise(WEBrick::HTTPStatus::BadRequest){
+      req.body
+    }
+  end
+
   def test_parse_headers
     msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1

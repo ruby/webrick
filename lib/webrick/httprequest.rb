@@ -531,6 +531,10 @@ module WEBrick
     def read_body(socket, block)
       return unless socket
       if tc = self['transfer-encoding']
+        if self['content-length']   
+          raise HTTPStatus::BadRequest, "request with both transfer-encoding and content-length, possible request smuggling"
+        end
+
         case tc
         when /\Achunked\z/io then read_chunked(socket, block)
         else raise HTTPStatus::NotImplemented, "Transfer-Encoding: #{tc}."
