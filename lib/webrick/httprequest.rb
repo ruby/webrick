@@ -531,7 +531,7 @@ module WEBrick
     def read_body(socket, block)
       return unless socket
       if tc = self['transfer-encoding']
-        if self['content-length']   
+        if self['content-length']
           raise HTTPStatus::BadRequest, "request with both transfer-encoding and content-length, possible request smuggling"
         end
 
