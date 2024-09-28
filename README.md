@@ -10,6 +10,8 @@ A WEBrick server can be composed of multiple WEBrick servers or servlets to prov
 
 WEBrick also includes tools for daemonizing a process and starting a process at a higher privilege level and dropping permissions.
 
+WEBrick is suitable for use in testing and for development.  However, while the developers of WEBrick will attempt to fix security issues, they do not encourage the use of WEBrick to serve production web applications that may be subject to hostile input.
+
 ## Installation
 
 Add this line to your application's Gemfile:
