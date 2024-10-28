@@ -83,6 +83,7 @@ Gem::Specification.new do |s|
     "sig/httputils.rbs",
     "sig/httpversion.rbs",
     "sig/log.rbs",
+    "sig/manifest.yaml",
     "sig/server.rbs",
     "sig/ssl.rbs",
     "sig/utils.rbs",
