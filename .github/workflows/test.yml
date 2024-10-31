@@ -34,3 +34,6 @@ jobs:
         bundler-cache: true # 'bundle install' and cache
     - name: Run test
       run: bundle exec rake test
+    - name: RBS validate
+      run: bundle exec rbs -r openssl -r digest -r uri -r erb -r singleton -r tempfile -r socket -I sig validate
+      if: ${{ ! startsWith(matrix.ruby, '2.') }} # rbs requires ruby 3.0+
