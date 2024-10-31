@@ -172,7 +172,8 @@ module WEBrick
       @accept_language = []
       @body = +""
 
-      @addr = @peeraddr = nil
+      @addr = []
+      @peeraddr = []
       @attributes = {}
       @user = nil
       @keep_alive = false
