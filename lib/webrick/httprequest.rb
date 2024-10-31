@@ -162,7 +162,6 @@ module WEBrick
       @script_name = @path_info = nil
       @query_string = nil
       @query = nil
-      @form_data = nil
 
       @raw_header = Array.new
       @header = nil

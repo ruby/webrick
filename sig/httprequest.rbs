@@ -8,8 +8,6 @@ module WEBrick
 
     @query: Hash[String, HTTPUtils::FormData]?
 
-    @form_data: nil
-
     @body: String
 
     @remaining_size: Integer?
