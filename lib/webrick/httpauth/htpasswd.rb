@@ -77,12 +77,12 @@ module WEBrick
                 if @password_hash == :bcrypt
                   raise StandardError, ".htpasswd file contains crypt password, only bcrypt passwords supported"
                 end
-                user, pass = line.split(":")
+                user, pass = line.split(":", 2)
               when %r!\A[^:]+:\$2[aby]\$\d{2}\$.{53}\z!
                 if @password_hash == :crypt
                   raise StandardError, ".htpasswd file contains bcrypt password, only crypt passwords supported"
                 end
-                user, pass = line.split(":")
+                user, pass = line.split(":", 2)
               when /:\$/, /:{SHA}/
                 raise NotImplementedError,
                       'MD5, SHA1 .htpasswd file not supported'

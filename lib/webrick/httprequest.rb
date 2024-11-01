@@ -162,7 +162,6 @@ module WEBrick
       @script_name = @path_info = nil
       @query_string = nil
       @query = nil
-      @form_data = nil
 
       @raw_header = Array.new
       @header = nil
@@ -173,7 +172,8 @@ module WEBrick
       @accept_language = []
       @body = +""
 
-      @addr = @peeraddr = nil
+      @addr = []
+      @peeraddr = []
       @attributes = {}
       @user = nil
       @keep_alive = false

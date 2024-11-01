@@ -108,10 +108,10 @@ module WEBrick
     # authentication schemes for proxies.
 
     module ProxyAuthenticator
-      RequestField  = "Proxy-Authorization" # :nodoc:
-      ResponseField = "Proxy-Authenticate" # :nodoc:
-      InfoField     = "Proxy-Authentication-Info" # :nodoc:
-      AuthException = HTTPStatus::ProxyAuthenticationRequired # :nodoc:
+      RequestField      = "Proxy-Authorization" # :nodoc:
+      ResponseField     = "Proxy-Authenticate" # :nodoc:
+      ResponseInfoField = "Proxy-Authentication-Info" # :nodoc:
+      AuthException     = HTTPStatus::ProxyAuthenticationRequired # :nodoc:
     end
   end
 end

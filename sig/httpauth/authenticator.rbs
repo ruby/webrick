@@ -47,7 +47,7 @@ module WEBrick
 
       ResponseField: String
 
-      InfoField: String
+      ResponseInfoField: String
 
       AuthException: singleton(HTTPStatus::ClientError)
     end

@@ -8,8 +8,6 @@ module WEBrick
 
     @query: Hash[String, HTTPUtils::FormData]?
 
-    @form_data: nil
-
     @body: String
 
     @remaining_size: Integer?
@@ -72,9 +70,9 @@ module WEBrick
 
     attr_accessor user: String?
 
-    attr_reader addr: ([String, Integer, String, String] | [])?
+    attr_reader addr: ([String, Integer, String, String] | [])
 
-    attr_reader peeraddr: ([String, Integer, String, String] | [])?
+    attr_reader peeraddr: ([String, Integer, String, String] | [])
 
     attr_reader attributes: Hash[untyped, untyped]
 

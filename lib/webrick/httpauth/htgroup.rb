@@ -49,7 +49,7 @@ module WEBrick
           File.open(@path){|io|
             while line = io.gets
               line.chomp!
-              group, members = line.split(/:\s*/)
+              group, members = line.split(/:\s*/, 2)
               @group[group] = members.split(/\s+/)
             end
           }
