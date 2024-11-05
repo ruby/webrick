@@ -30,7 +30,7 @@ module WEBrick
 
     def listen: (String address, Integer port) -> void
 
-    def start: () { (TCPSocket) -> void } -> void
+    def start: () ?{ (TCPSocket) -> void } -> void
 
     def stop: () -> void
 
@@ -42,7 +42,7 @@ module WEBrick
 
     def accept_client: (TCPServer svr) -> TCPSocket?
 
-    def start_thread: (TCPSocket sock) { (TCPSocket) -> void } -> Thread
+    def start_thread: (TCPSocket sock) ?{ (TCPSocket) -> void } -> Thread
 
     def call_callback: (Symbol callback_name, *untyped args) -> untyped
 
