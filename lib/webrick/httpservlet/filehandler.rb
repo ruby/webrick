@@ -250,7 +250,7 @@ module WEBrick
 
       def do_POST(req, res)
         unless exec_handler(req, res)
-          raise HTTPStatus::NotFound, "`#{req.path}' not found."
+          raise HTTPStatus::NotFound, "'#{req.path}' not found."
         end
       end
 
@@ -307,7 +307,7 @@ module WEBrick
       end
 
       def exec_handler(req, res)
-        raise HTTPStatus::NotFound, "`#{req.path}' not found." unless @root
+        raise HTTPStatus::NotFound, "'#{req.path}' not found." unless @root
         if set_filename(req, res)
           handler = get_handler(req, res)
           call_callback(:HandlerCallback, req, res)
@@ -359,7 +359,7 @@ module WEBrick
             call_callback(:FileCallback, req, res)
             return true
           else
-            raise HTTPStatus::NotFound, "`#{req.path}' not found."
+            raise HTTPStatus::NotFound, "'#{req.path}' not found."
           end
         end
 
@@ -368,8 +368,8 @@ module WEBrick
 
       def check_filename(req, res, name)
         if nondisclosure_name?(name) || windows_ambiguous_name?(name)
-          @logger.warn("the request refers nondisclosure name `#{name}'.")
-          raise HTTPStatus::NotFound, "`#{req.path}' not found."
+          @logger.warn("the request refers nondisclosure name '#{name}'.")
+          raise HTTPStatus::NotFound, "'#{req.path}' not found."
         end
       end
 
@@ -437,7 +437,7 @@ module WEBrick
       def set_dir_list(req, res)
         redirect_to_directory_uri(req, res)
         unless @options[:FancyIndexing]
-          raise HTTPStatus::Forbidden, "no access permission to `#{req.path}'"
+          raise HTTPStatus::Forbidden, "no access permission to '#{req.path}'"
         end
         local_path = res.filename
         list = Dir::entries(local_path).collect{|name|

@@ -188,7 +188,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
   def test_non_disclosure_name
     config = { :DocumentRoot => File.dirname(__FILE__), }
     log_tester = lambda {|log, access_log|
-      log = log.reject {|s| /ERROR `.*\' not found\./ =~ s }
+      log = log.reject {|s| /ERROR '.*' not found\./ =~ s }
       log = log.reject {|s| /WARN  the request refers nondisclosure name/ =~ s }
       assert_equal([], log)
     }
@@ -220,7 +220,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
     config = { :DocumentRoot => File.dirname(__FILE__), }
     log_tester = lambda {|log, access_log|
       log = log.reject {|s| /ERROR bad URI/ =~ s }
-      log = log.reject {|s| /ERROR `.*\' not found\./ =~ s }
+      log = log.reject {|s| /ERROR '.*' not found\./ =~ s }
       assert_equal([], log)
     }
     TestWEBrick.start_httpserver(config, log_tester) do |server, addr, port, log|
@@ -249,7 +249,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
     return if File.executable?(__FILE__) # skip on strange file system
 
     log_tester = lambda {|log, access_log|
-      log = log.reject {|s| /ERROR `.*\' not found\./ =~ s }
+      log = log.reject {|s| /ERROR '.*' not found\./ =~ s }
       log = log.reject {|s| /WARN  the request refers nondisclosure name/ =~ s }
       assert_equal([], log)
     }
@@ -346,7 +346,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
       },
     }
     log_tester = lambda {|log, access_log|
-      log = log.reject {|s| /ERROR `.*\' not found\./ =~ s }
+      log = log.reject {|s| /ERROR '.*' not found\./ =~ s }
       assert_equal([], log)
     }
     TestWEBrick.start_httpserver(config, log_tester) do |server, addr, port, log|
@@ -382,7 +382,7 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
   def test_erbhandler
     config = { :DocumentRoot => File.dirname(__FILE__) }
     log_tester = lambda {|log, access_log|
-      log = log.reject {|s| /ERROR `.*\' not found\./ =~ s }
+      log = log.reject {|s| /ERROR '.*' not found\./ =~ s }
       assert_equal([], log)
     }
     TestWEBrick.start_httpserver(config, log_tester) do |server, addr, port, log|

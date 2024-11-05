@@ -453,7 +453,7 @@ module WEBrick
       _end_of_html_
 
       if backtrace && $DEBUG
-        @body << "backtrace of `#{HTMLUtils::escape(ex.class.to_s)}' "
+        @body << "backtrace of '#{HTMLUtils::escape(ex.class.to_s)}' "
         @body << "#{HTMLUtils::escape(ex.message)}"
         @body << "<PRE>"
         ex.backtrace.each{|line| @body << "\t#{line}\n"}

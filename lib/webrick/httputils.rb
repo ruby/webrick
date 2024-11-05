@@ -29,14 +29,14 @@ module WEBrick
     # normalized.
 
     def normalize_path(path)
-      raise "abnormal path `#{path}'" if path[0] != ?/
+      raise "abnormal path '#{path}'" if path[0] != ?/
       ret = path.dup
 
       ret.gsub!(%r{/+}o, '/')                    # //      => /
       while ret.sub!(%r'/\.(?:/|\Z)', '/'); end  # /.      => /
       while ret.sub!(%r'/(?!\.\./)[^/]+/\.\.(?:/|\Z)', '/'); end # /foo/.. => /foo
 
-      raise "abnormal path `#{path}'" if %r{/\.\.(/|\Z)} =~ ret
+      raise "abnormal path '#{path}'" if %r{/\.\.(/|\Z)} =~ ret
       ret
     end
     module_function :normalize_path

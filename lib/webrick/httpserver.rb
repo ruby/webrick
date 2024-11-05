@@ -128,11 +128,11 @@ module WEBrick
           do_OPTIONS(req, res)
           raise HTTPStatus::OK
         end
-        raise HTTPStatus::NotFound, "`#{req.unparsed_uri}' not found."
+        raise HTTPStatus::NotFound, "'#{req.unparsed_uri}' not found."
       end
 
       servlet, options, script_name, path_info = search_servlet(req.path)
-      raise HTTPStatus::NotFound, "`#{req.path}' not found." unless servlet
+      raise HTTPStatus::NotFound, "'#{req.path}' not found." unless servlet
       req.script_name = script_name
       req.path_info = path_info
       si = servlet.get_instance(self, *options)
