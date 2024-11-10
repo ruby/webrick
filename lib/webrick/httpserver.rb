@@ -79,7 +79,12 @@ module WEBrick
             timeout -= 0.5
           end
           raise HTTPStatus::EOFError if timeout <= 0 || @status != :Running
-          raise HTTPStatus::EOFError if sock.eof?
+          begin
+            raise HTTPStatus::EOFError if sock.eof?
+          rescue Errno::ECONNRESET
+            raise HTTPStatus::EOFError
+          end
+
           req.parse(sock)
           res.request_method = req.request_method
           res.request_uri = req.request_uri
