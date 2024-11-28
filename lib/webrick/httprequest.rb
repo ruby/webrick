@@ -224,7 +224,7 @@ module WEBrick
         @script_name = ""
         @path_info = @path.dup
       rescue
-        raise HTTPStatus::BadRequest, "bad URI `#{@unparsed_uri}'."
+        raise HTTPStatus::BadRequest, "bad URI '#{@unparsed_uri}'."
       end
 
       if /\Aclose\z/io =~ self["connection"]
@@ -464,7 +464,7 @@ module WEBrick
         @http_version   = HTTPVersion.new($3 ? $3 : "0.9")
       else
         rl = @request_line.sub(/\x0d?\x0a\z/o, '')
-        raise HTTPStatus::BadRequest, "bad Request-Line `#{rl}'."
+        raise HTTPStatus::BadRequest, "bad Request-Line '#{rl}'."
       end
     end
 
@@ -563,7 +563,7 @@ module WEBrick
         chunk_ext = $2
         [ chunk_size, chunk_ext ]
       else
-        raise HTTPStatus::BadRequest, "bad chunk `#{line}'."
+        raise HTTPStatus::BadRequest, "bad chunk '#{line}'."
       end
     end
 
@@ -581,7 +581,7 @@ module WEBrick
 
         line = read_line(socket)              # skip CRLF
         unless line == "\r\n"
-          raise HTTPStatus::BadRequest, "extra data after chunk `#{line}'."
+          raise HTTPStatus::BadRequest, "extra data after chunk '#{line}'."
         end
 
         chunk_size, = read_chunk_size(socket)

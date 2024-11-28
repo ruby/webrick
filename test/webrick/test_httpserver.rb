@@ -237,8 +237,8 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
       :RequestCallback => Proc.new{|req, res| requested0 += 1 },
     }
     log_tester = lambda {|log, access_log|
-      assert(log.find {|s| %r{ERROR `/' not found\.} =~ s })
-      assert_equal([], log.reject {|s| %r{ERROR `/' not found\.} =~ s })
+      assert(log.find {|s| %r{ERROR '/' not found\.} =~ s })
+      assert_equal([], log.reject {|s| %r{ERROR '/' not found\.} =~ s })
     }
     TestWEBrick.start_httpserver(config, log_tester){|server, addr, port, log|
       vhost_config = {
@@ -411,7 +411,7 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
     log_tester = lambda {|log, access_log|
       assert_equal(2, log.length)
       assert_match(/WARN  :RequestHandler is deprecated, please use :RequestCallback/, log[0])
-      assert_match(%r{ERROR `/' not found\.}, log[1])
+      assert_match(%r{ERROR '/' not found\.}, log[1])
     }
     TestWEBrick.start_httpserver(config, log_tester){|server, addr, port, log|
       Thread.pass while server.status != :Running
@@ -465,7 +465,7 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
     http = Net::HTTP.new(addr[3], addr[1])
     req = Net::HTTP::Get.new('/notexist%0a/foo')
     http.request(req) { |res| assert_equal('404', res.code) }
-    exp = %Q(ERROR `/notexist\\n/foo' not found.\n)
+    exp = %Q(ERROR '/notexist\\n/foo' not found.\n)
     assert_equal 1, log_ary.size
     assert_include log_ary[0], exp
   ensure

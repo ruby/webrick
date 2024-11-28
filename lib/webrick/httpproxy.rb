@@ -118,7 +118,7 @@ module WEBrick
         public_send("do_#{req.request_method}", req, res)
       rescue NoMethodError
         raise HTTPStatus::MethodNotAllowed,
-          "unsupported method `#{req.request_method}'."
+          "unsupported method '#{req.request_method}'."
       rescue => err
         logger.debug("#{err.class}: #{err.message}")
         raise HTTPStatus::ServiceUnavailable, err.message
@@ -149,7 +149,7 @@ module WEBrick
       end
 
       begin
-        @logger.debug("CONNECT: upstream proxy is `#{host}:#{port}'.")
+        @logger.debug("CONNECT: upstream proxy is '#{host}:#{port}'.")
         os = TCPSocket.new(host, port)     # origin server
 
         if proxy
@@ -175,7 +175,7 @@ module WEBrick
         @logger.debug("CONNECT #{host}:#{port}: succeeded")
         res.status = HTTPStatus::RC_OK
       rescue => ex
-        @logger.debug("CONNECT #{host}:#{port}: failed `#{ex.message}'")
+        @logger.debug("CONNECT #{host}:#{port}: failed '#{ex.message}'")
         res.set_error(ex)
         raise HTTPStatus::EOFError
       ensure
@@ -241,7 +241,7 @@ module WEBrick
         if HopByHop.member?(key)          || # RFC2616: 13.5.1
            connections.member?(key)       || # RFC2616: 14.10
            ShouldNotTransfer.member?(key)    # pragmatics
-          @logger.debug("choose_header: `#{key}: #{value}'")
+          @logger.debug("choose_header: '#{key}: #{value}'")
           next
         end
         dst[key] = value

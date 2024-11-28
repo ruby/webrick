@@ -365,7 +365,7 @@ module WEBrick
         begin
           s.shutdown
         rescue Errno::ENOTCONN
-          # when `Errno::ENOTCONN: Socket is not connected' on some platforms,
+          # when 'Errno::ENOTCONN: Socket is not connected' on some platforms,
           # call #close instead of #shutdown.
           # (ignore @config[:ShutdownSocketWithoutClose])
           s.close
