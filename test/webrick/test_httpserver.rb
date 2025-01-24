@@ -562,4 +562,35 @@ class TestWEBrickHTTPServer < Test::Unit::TestCase
       end
     end
   end
+
+  def test_client_connection_reset
+    log_tester = lambda {|log, access_log|
+      assert_empty log
+    }
+
+    TestWEBrick.start_httpserver({}, log_tester) do |server, addr, port, log|
+      server.mount_proc("/", lambda {|req, res| res.body = "hello!" })
+
+      http = Net::HTTP.new(addr, port)
+      req = Net::HTTP::Get.new("/")
+      req['Connection'] = 'Keep-Alive'
+
+      # Simulate a client, which makes a request, reads the response
+      # and then resets the connection.
+      http.request(req) do |res|
+        res.body # read body to completion
+
+        # Fish the socket out of the Net::HTTP object, configure it to
+        # linger on close, and then close it abruptly. This will reset
+        # the socket, discard any pending data cause a RST to be sent.
+        socket = http.instance_variable_get(:@socket).io
+        socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_LINGER, [1,0].pack('ii'))
+        socket.close
+      end
+
+      # delay the server shutdown so that WEBrick::HTTPServer#run begins
+      # a new iteration.
+      sleep 0.1
+    end
+  end
 end
