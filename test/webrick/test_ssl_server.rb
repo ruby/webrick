@@ -20,6 +20,15 @@ class TestWEBrickSSLServer < Test::Unit::TestCase
     )
   end
 
+  def test_tls1_3
+    assert_self_signed_cert(
+      :SSLEnable => true,
+      :SSLCertName => [["C", "JP"], ["O", "www.ruby-lang.org"], ["CN", "Ruby"]],
+      :SSLMinVersion => OpenSSL::SSL::TLS1_3_VERSION,
+      :SSLMaxVersion => OpenSSL::SSL::TLS1_3_VERSION
+    )
+  end
+
   def test_self_signed_cert_server_with_string
     assert_self_signed_cert(
       :SSLEnable => true,

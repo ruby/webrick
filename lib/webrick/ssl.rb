@@ -78,6 +78,8 @@ module WEBrick
       :SSLVerifyClient      => ::OpenSSL::SSL::VERIFY_NONE,
       :SSLVerifyDepth       => nil,
       :SSLVerifyCallback    => nil,   # custom verification
+      :SSLMinVersion        => OpenSSL::SSL::TLS1_VERSION,
+      :SSLMaxVersion        => OpenSSL::SSL::TLS1_2_VERSION,
       :SSLTimeout           => nil,
       :SSLOptions           => nil,
       :SSLCiphers           => nil,
@@ -201,6 +203,8 @@ module WEBrick
       ctx.verify_mode = config[:SSLVerifyClient]
       ctx.verify_depth = config[:SSLVerifyDepth]
       ctx.verify_callback = config[:SSLVerifyCallback]
+      ctx.min_version = config[:SSLMinVersion]
+      ctx.max_version = config[:SSLMaxVersion]
       ctx.servername_cb = config[:SSLServerNameCallback] || proc { |args| ssl_servername_callback(*args) }
       ctx.timeout = config[:SSLTimeout]
       ctx.options = config[:SSLOptions]
