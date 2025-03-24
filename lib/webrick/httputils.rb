@@ -168,17 +168,22 @@ module WEBrick
       "cookie" => CookieHeader,
     })
 
-    def parse_header(raw)
+    def parse_header(raw, cgi_mode = false)
       header = Hash.new([].freeze)
       field = nil
+
+      line_break = cgi_mode ? "\\r?\\n" : "\\r\\n"
+      header_line = Regexp.new(/^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)#{line_break}\z/m)
+      continued_header_lines = Regexp.new(/^[ \t]+([^\r\n\0]*?)#{line_break}/m)
+
       raw.each_line{|line|
         case line
-        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/om
+        when header_line
           field, value = $1, $2
           field.downcase!
           header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
           header[field] << value
-        when /^[ \t]+([^\r\n\0]*?)\r\n/om
+        when continued_header_lines
           unless field
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
