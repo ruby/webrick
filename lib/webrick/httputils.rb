@@ -168,13 +168,17 @@ module WEBrick
       "cookie" => CookieHeader,
     })
 
+    REGEXP_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/m
+    REGEXP_CGI_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r?\n\z/m
+    REGEXP_CONTINUED_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r\n/m
+    REGEXP_CONTINUED_CGI_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r?\n/m
+
     def parse_header(raw, cgi_mode: false)
       header = Hash.new([].freeze)
       field = nil
 
-      line_break = cgi_mode ? "\\r?\\n" : "\\r\\n"
-      header_line = Regexp.new(/^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)#{line_break}\z/m)
-      continued_header_lines = Regexp.new(/^[ \t]+([^\r\n\0]*?)#{line_break}/m)
+      header_line = cgi_mode ? REGEXP_CGI_HEADER_LINE : REGEXP_HEADER_LINE
+      continued_header_lines = cgi_mode ? REGEXP_CONTINUED_CGI_HEADER_LINE : REGEXP_CONTINUED_HEADER_LINE
 
       raw.each_line{|line|
         case line
