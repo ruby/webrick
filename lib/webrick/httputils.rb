@@ -168,7 +168,7 @@ module WEBrick
       "cookie" => CookieHeader,
     })
 
-    def parse_header(raw, cgi_mode = false)
+    def parse_header(raw, cgi_mode: false)
       header = Hash.new([].freeze)
       field = nil
 
