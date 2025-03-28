@@ -148,10 +148,6 @@ module WEBrick
     end
     module_function :mime_type
 
-    ##
-    # Parses an HTTP header +raw+ into a hash of header fields with an Array
-    # of values.
-
     class SplitHeader < Array
       def join(separator = ", ")
         super
@@ -172,6 +168,11 @@ module WEBrick
     REGEXP_CGI_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r?\n\z/m
     REGEXP_CONTINUED_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r\n/m
     REGEXP_CONTINUED_CGI_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r?\n/m
+
+    ##
+    # Parses an HTTP header +raw+ into a hash of header fields with an Array
+    # of values. The header is expected to end with \r\n. If the header is in CGI
+    # format, set +cgi_mode+ to true to allow for a single \n line ending.
 
     def parse_header(raw, cgi_mode: false)
       header = Hash.new([].freeze)
