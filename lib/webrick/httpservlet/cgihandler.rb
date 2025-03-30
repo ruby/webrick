@@ -119,6 +119,9 @@ module WEBrick
       end
       alias do_POST do_GET
 
+      REGEXP_CGI_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r?\n\z/m
+      REGEXP_CONTINUED_CGI_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r?\n/m
+
       # :startdoc:
     end
 

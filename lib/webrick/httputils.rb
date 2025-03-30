@@ -165,9 +165,7 @@ module WEBrick
     })
 
     REGEXP_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/m
-    REGEXP_CGI_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r?\n\z/m
     REGEXP_CONTINUED_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r\n/m
-    REGEXP_CONTINUED_CGI_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r?\n/m
 
     ##
     # Parses an HTTP header +raw+ into a hash of header fields with an Array
@@ -178,8 +176,10 @@ module WEBrick
       header = Hash.new([].freeze)
       field = nil
 
-      header_line = cgi_mode ? REGEXP_CGI_HEADER_LINE : REGEXP_HEADER_LINE
-      continued_header_lines = cgi_mode ? REGEXP_CONTINUED_CGI_HEADER_LINE : REGEXP_CONTINUED_HEADER_LINE
+      header_line = cgi_mode ? WEBrick::HTTPServlet::CGIHandler::REGEXP_CGI_HEADER_LINE
+                             : REGEXP_HEADER_LINE
+      continued_header_lines = cgi_mode ? WEBrick::HTTPServlet::CGIHandler::REGEXP_CONTINUED_CGI_HEADER_LINE
+                                        : REGEXP_CONTINUED_HEADER_LINE
 
       raw.each_line{|line|
         case line
