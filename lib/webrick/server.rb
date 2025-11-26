@@ -174,8 +174,7 @@ module WEBrick
                 if svrs[0].include? sp
                   # swallow shutdown pipe
                   buf = String.new
-                  nil while String ===
-                            sp.read_nonblock([sp.nread, 8].max, buf, exception: false)
+                  nil while String === sp.read_nonblock(8, buf, exception: false)
                   break
                 end
                 svrs[0].each{|svr|
