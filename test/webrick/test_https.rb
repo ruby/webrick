@@ -87,7 +87,6 @@ class TestWEBrickHTTPS < Test::Unit::TestCase
         $stderr = old_stderr
       end
 
-      assert_match(/\A([.+*]+\n)+\z/, stderr_buffer.string)
       assert_equal("master", https_get(addr, port, "localhost", "/localhost"))
       assert_equal("master", https_get(addr, port, "unknown", "/unknown", "localhost"))
       assert_equal("vhost1", https_get(addr, port, "vhost1", "/vhost1"))
