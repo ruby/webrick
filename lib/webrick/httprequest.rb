@@ -210,11 +210,17 @@ module WEBrick
         @accept_encoding = HTTPUtils.parse_qvalues(self['accept-encoding'])
         @accept_language = HTTPUtils.parse_qvalues(self['accept-language'])
       end
-      return if @request_method == "CONNECT"
-      return if @unparsed_uri == "*"
+
+      setup_forwarded_info
+
+      if @request_method == "CONNECT" || @unparsed_uri == "*"
+        # For CONNECT and OPTIONS * requests, we still need to extract
+        # host and port from the Host header for CGI meta variables.
+        @host, @port = extract_host_port
+        return
+      end
 
       begin
-        setup_forwarded_info
         @request_uri = parse_uri(@unparsed_uri)
         @path = HTTPUtils::unescape(@request_uri.path)
         @path = HTTPUtils::normalize_path(@path)
@@ -500,25 +506,36 @@ module WEBrick
       end
     end
 
-    def parse_uri(str, scheme="http")
-      if @config[:Escape8bitURI]
-        str = HTTPUtils::escape8bit(str)
-      end
-      str.sub!(%r{\A/+}o, '/')
-      uri = URI::parse(str)
-      return uri if uri.absolute?
+    # Extracts host and port from request headers (Host, X-Forwarded-Host, etc.)
+    # or falls back to socket address or server config.
+    # Returns [host, port] where port is an Integer or nil.
+    def extract_host_port
       if @forwarded_host
         host, port = @forwarded_host, @forwarded_port
       elsif self["host"]
         host, port = parse_host_request_line(self["host"])
+        port = port.to_i if port
       elsif @addr.size > 0
         host, port = @addr[2], @addr[1]
       else
         host, port = @config[:ServerName], @config[:Port]
       end
+
+      [host, port]
+    end
+
+    def parse_uri(str, scheme="http")
+      if @config[:Escape8bitURI]
+        str = HTTPUtils::escape8bit(str)
+      end
+      str.sub!(%r{\A/+}, '/')
+      uri = URI::parse(str)
+      return uri if uri.absolute?
+
+      host, port = extract_host_port
       uri.scheme = @forwarded_proto || scheme
       uri.host = host
-      uri.port = port ? port.to_i : nil
+      uri.port = port
       return URI::parse(uri.to_s)
     end
 

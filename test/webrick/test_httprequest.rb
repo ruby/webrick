@@ -701,4 +701,42 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     assert_equal 2, req.cookies.length
     assert_equal 'a=1; b=2', req['cookie']
   end
+
+  def test_options_asterisk
+    # Test that OPTIONS * requests properly extract host and port from Host header
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      OPTIONS * HTTP/1.1
+      Host: test.ruby-lang.org:8080
+
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    assert_equal("OPTIONS", req.request_method)
+    assert_equal("*", req.unparsed_uri)
+    assert_equal("test.ruby-lang.org", req.host)
+    assert_equal(8080, req.port)
+
+    # Verify meta_vars includes correct SERVER_NAME and SERVER_PORT
+    meta = req.meta_vars
+    assert_equal("test.ruby-lang.org", meta["SERVER_NAME"])
+    assert_equal("8080", meta["SERVER_PORT"])
+  end
+
+  def test_options_asterisk_default_port
+    # Test OPTIONS * with Host header without explicit port
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      OPTIONS * HTTP/1.1
+      Host: test.ruby-lang.org
+
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(msg))
+    assert_equal("OPTIONS", req.request_method)
+    assert_equal("*", req.unparsed_uri)
+    assert_equal("test.ruby-lang.org", req.host)
+    assert_nil(req.port) # Port is nil when not specified
+
+    meta = req.meta_vars
+    assert_equal("test.ruby-lang.org", meta["SERVER_NAME"])
+  end
 end
