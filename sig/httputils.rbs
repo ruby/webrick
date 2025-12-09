@@ -26,7 +26,7 @@ module WEBrick
 
     HEADER_CLASSES: Hash[String, untyped]
 
-    def self?.parse_header: (String raw) -> Hash[String, Array[String]]
+    def self?.parse_header: (String raw, ?header_line_regexp: Regexp, ?continued_header_line_regexp: Regexp) -> Hash[String, Array[String]]
 
     def self?.split_header_value: (String str) -> Array[String]
 
