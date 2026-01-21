@@ -148,10 +148,6 @@ module WEBrick
     end
     module_function :mime_type
 
-    ##
-    # Parses an HTTP header +raw+ into a hash of header fields with an Array
-    # of values.
-
     class SplitHeader < Array
       def join(separator = ", ")
         super
@@ -168,17 +164,28 @@ module WEBrick
       "cookie" => CookieHeader,
     })
 
-    def parse_header(raw)
+    REGEXP_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/m
+    REGEXP_CONTINUED_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r\n/m
+
+    ##
+    # Parses an HTTP header +raw+ into a hash of header fields with an Array
+    # of values. The header is expected to end with \r\n. If the header is in CGI
+    # format, use +header_line_regexp+ and +continued_header_line_regexp+ to
+    # parse the header lines. The default values are REGEXP_HEADER_LINE and
+    # REGEXP_CONTINUED_HEADER_LINE.
+
+    def parse_header(raw, header_line_regexp: REGEXP_HEADER_LINE, continued_header_line_regexp: REGEXP_CONTINUED_HEADER_LINE)
       header = Hash.new([].freeze)
       field = nil
+
       raw.each_line{|line|
         case line
-        when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/om
+        when header_line_regexp
           field, value = $1, $2
           field.downcase!
           header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
           header[field] << value
-        when /^[ \t]+([^\r\n\0]*?)\r\n/om
+        when continued_header_line_regexp
           unless field
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
