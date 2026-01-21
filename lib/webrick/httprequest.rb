@@ -634,7 +634,7 @@ module WEBrick
           @query = HTTPUtils::parse_query(@query_string)
         elsif self['content-type'] =~ /^application\/x-www-form-urlencoded/
           @query = HTTPUtils::parse_query(body)
-        elsif self['content-type'] =~ /^multipart\/form-data; boundary=(.+)/
+        elsif self['content-type'] =~ /^multipart\/form-data; *boundary=(.+)/
           boundary = HTTPUtils::dequote($1)
           @query = HTTPUtils::parse_form_data(body, boundary)
         else
