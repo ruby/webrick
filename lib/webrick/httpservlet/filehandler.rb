@@ -46,12 +46,12 @@ module WEBrick
         mtime = st.mtime
         res['etag'] = sprintf("%x-%x-%x", st.ino, st.size, st.mtime.to_i)
 
-        if not_modified?(req, res, mtime, res['etag'])
-          res.body = ''
-          raise HTTPStatus::NotModified
-        elsif req['range']
+        if req['range']
           make_partial_content(req, res, @local_path, st.size)
           raise HTTPStatus::PartialContent
+        elsif not_modified?(req, res, mtime, res['etag'])
+          res.body = ''
+          raise HTTPStatus::NotModified
         else
           mtype = HTTPUtils::mime_type(@local_path, @config[:MimeTypes])
           res['content-type'] = mtype
