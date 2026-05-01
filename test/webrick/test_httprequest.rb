@@ -237,6 +237,36 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     }
   end
 
+  def test_multiple_transfer_encoding_headers
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      POST /user HTTP/1.1
+      Transfer-Encoding: chunked
+      Transfer-Encoding: identity
+
+      0
+
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    assert_raise(WEBrick::HTTPStatus::BadRequest){
+      req.parse(StringIO.new(msg))
+    }
+  end
+
+  def test_transfer_encoding_header_with_obs
+    msg = <<~HTTP.gsub("\n", "\r\n")
+      POST /user HTTP/1.1
+      Transfer-Encoding: chunked
+       identity
+
+      0
+
+    HTTP
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    assert_raise(WEBrick::HTTPStatus::BadRequest){
+      req.parse(StringIO.new(msg))
+    }
+  end
+
   def test_parse_headers
     msg = <<~HTTP.gsub("\n", "\r\n")
       GET /path HTTP/1.1
