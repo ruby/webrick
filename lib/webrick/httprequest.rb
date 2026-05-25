@@ -308,7 +308,9 @@ module WEBrick
     # The content-length header
 
     def content_length
-      return Integer(self['content-length'])
+      if length = self['content-length']
+        Integer(length, 10)
+      end
     end
 
     ##
@@ -474,9 +476,20 @@ module WEBrick
       end
     end
 
+    DISALLOWED_TRAILERS = %w[content-encoding content-type content-range
+      trailer authorization set-cookie transfer-encoding content-length
+      host cache-control max-forwards te].freeze
+    private_constant :DISALLOWED_TRAILERS
+
     def read_header(socket)
       if socket
         end_of_headers = false
+
+        raw = if @header
+          trailer_lines = []
+        else
+          @raw_header
+        end
 
         while line = read_line(socket)
           if line == CRLF
@@ -489,19 +502,35 @@ module WEBrick
           if line.include?("\x00")
             raise HTTPStatus::BadRequest, 'null byte in header'
           end
-          @raw_header << line
+          raw << line
         end
 
         # Allow if @header already set to support chunked trailers
-        raise HTTPStatus::EOFError unless end_of_headers || @header
+        raise HTTPStatus::EOFError unless end_of_headers || trailer_lines
       end
-      @header = HTTPUtils::parse_header(@raw_header.join)
 
-      if (content_length = @header['content-length']) && content_length.length != 0
-        if content_length.length > 1
-          raise HTTPStatus::BadRequest, "multiple content-length request headers"
-        elsif !/\A\d+\z/.match?(content_length[0])
-          raise HTTPStatus::BadRequest, "invalid content-length request header"
+      if trailer_lines
+        if requested_trailers = self["trailer"]
+          requested_trailers = requested_trailers.downcase.split
+          requested_trailers -= DISALLOWED_TRAILERS
+          unless requested_trailers.empty?
+            trailers = HTTPUtils::parse_header(trailer_lines.join)
+            requested_trailers.each do |key|
+              if value = trailers[key]
+                @header[key] = value
+              end
+            end
+          end
+        end
+      else
+        @header = HTTPUtils::parse_header(@raw_header.join)
+
+        if (content_length = @header['content-length']) && content_length.length != 0
+          if content_length.length > 1
+            raise HTTPStatus::BadRequest, "multiple content-length request headers"
+          elsif !/\A\d+\z/.match?(content_length[0])
+            raise HTTPStatus::BadRequest, "invalid content-length request header"
+          end
         end
       end
     end

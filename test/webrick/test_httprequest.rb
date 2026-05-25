@@ -441,6 +441,28 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     end
   end
 
+  def test_chunked_trailers
+    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req.parse(StringIO.new(<<~HTTP))
+      POST /path HTTP/1.1\r
+      host: foo.example.com\r
+      Transfer-Encoding: chunked\r
+      Trailer: host Foo\r
+      \r
+      1\r
+      2\r
+      0\r
+      Content-Length: 2\r
+      Foo: a\r
+      Host: bar.example.com\r
+      \r
+    HTTP
+    assert_nil(req.content_length)
+    assert_equal("2", req.body)
+    assert_equal("a", req["foo"])
+    assert_equal("foo.example.com", req["host"])
+  end
+
   def test_bad_chunked_extra_data
     msg = <<~HTTP
       POST /path HTTP/1.1\r
