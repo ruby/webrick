@@ -64,17 +64,43 @@ module WEBrick
 
     alias orig_meta_vars meta_vars
 
+    # This method provides the metavariables defined by
+    # the Apache mod_ssl module, which add SSL/TLS support to CGI.
+    # To browse the current documentation, see below:
+    # http://www.modssl.org/docs/2.8/ssl_reference.html#ToC25
+
     def meta_vars
       meta = orig_meta_vars
       if server_cert
         meta["HTTPS"] = "on"
         meta["SSL_SERVER_CERT"] = @server_cert.to_pem
-        meta["SSL_CLIENT_CERT"] = @client_cert ? @client_cert.to_pem : ""
+
+        if @client_cert
+          meta["SSL_CLIENT_M_VERSION"] = @client_cert.version
+          meta["SSL_CLIENT_M_SERIAL"] = @client_cert.serial
+          meta["SSL_CLIENT_S_DN"] = @client_cert.subject.to_s
+          meta["SSL_CLIENT_I_DN"] = @client_cert.issuer.to_s
+          meta["SSL_CLIENT_V_START"] = @client_cert.not_before.httpdate
+          meta["SSL_CLIENT_V_END"] = @client_cert.not_after.httpdate
+          meta["SSL_CLIENT_V_REMAIN"] = (@client_cert.not_after - @client_cert.not_before) / 60 / 60 / 24
+          meta["SSL_CLIENT_A_SIG"] = @client_cert.signature_algorithm
+          meta["SSL_CLIENT_A_KEY"] = @client_cert.public_key.oid
+          meta["SSL_CLIENT_CERT"] = @client_cert.to_pem
+          meta["SSL_CLIENT_VERIFY"] = if @socket.context.verify_mode == OpenSSL::SSL::VERIFY_NONE
+            "NONE"
+          elsif @socket.verify_result == OpenSSL::X509::V_OK
+            "SUCCESS"
+          else
+            "FAILED"
+          end
+        end
+
         if @client_cert_chain
           @client_cert_chain.each_with_index{|cert, i|
             meta["SSL_CLIENT_CERT_CHAIN_#{i}"] = cert.to_pem
           }
         end
+
         meta["SSL_CIPHER"] = @cipher[0]
         meta["SSL_PROTOCOL"] = @cipher[1]
         meta["SSL_CIPHER_USEKEYSIZE"] = @cipher[2].to_s
