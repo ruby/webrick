@@ -511,13 +511,13 @@ module WEBrick
 
       if trailer_lines
         if requested_trailers = self["trailer"]
-          requested_trailers = requested_trailers.downcase.split
+          requested_trailers = requested_trailers.downcase.split(/[,\s]+/)
           requested_trailers -= DISALLOWED_TRAILERS
           unless requested_trailers.empty?
             trailers = HTTPUtils::parse_header(trailer_lines.join)
             requested_trailers.each do |key|
-              if value = trailers[key]
-                @header[key] = value
+              if trailers.key?(key)
+                @header[key] = trailers[key]
               end
             end
           end
