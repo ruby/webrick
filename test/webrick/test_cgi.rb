@@ -145,4 +145,15 @@ class TestWEBrickCGI < Test::Unit::TestCase
       assert_not_match(CtrlPat, s)
     }
   end
+
+  def test_bare_lf_in_cgi_header
+    TestWEBrick.start_cgi_server do |server, addr, port, log|
+      http = Net::HTTP.new(addr, port)
+      req = Net::HTTP::Get.new("/webrick_bare_lf.cgi")
+      assert_nothing_raised do
+        res = http.request(req)
+        assert_equal res['Content-Type'], 'text/plain'
+      end
+    end
+  end
 end
