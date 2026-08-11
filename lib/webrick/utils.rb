@@ -87,7 +87,6 @@ module WEBrick
     ###########
 
     require "timeout"
-    require "singleton"
 
     ##
     # Class used to manage timeout handlers across multiple threads.
@@ -116,8 +115,6 @@ module WEBrick
     # will print 'foo'
     #
     class TimeoutHandler
-      include Singleton
-
       ##
       # Mutex used to synchronize access across threads
       TimeoutMutex = Thread::Mutex.new # :nodoc:
@@ -141,6 +138,11 @@ module WEBrick
       def self.terminate
         instance.terminate
       end
+
+      def self.instance
+        @instance ||= new
+      end
+      private_class_method :new
 
       ##
       # Creates a new TimeoutHandler.  You should use ::register and ::cancel
