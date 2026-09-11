@@ -529,7 +529,7 @@ module WEBrick
             dname = name
           end
           s =  +"<TR><TD class=\"name\"><A HREF=\"#{HTTPUtils::escape(name)}#{query if name.end_with?('/')}\">#{HTMLUtils::escape(dname)}</A></TD>"
-          s << "<TD class=\"mtime\">" << (time ? time.strftime("%Y/%m/%d %H:%M") : "") << "</TD>"
+          s << "<TD class=\"mtime\">" << (time ? time.strftime("%Y-%m-%d %H:%M") : "") << "</TD>"
           s << "<TD class=\"size\">" << (size >= 0 ? size.to_s : "-") << "</TD></TR>\n"
           res.body << s
         }
