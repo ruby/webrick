@@ -9,7 +9,7 @@
 #
 # $IPR: httpserver.rb,v 1.63 2002/10/01 17:16:32 gotoyuzo Exp $
 
-require 'io/wait'
+require 'io/wait' if RUBY_VERSION < "3.2"
 require_relative 'server'
 require_relative 'httputils'
 require_relative 'httpstatus'
