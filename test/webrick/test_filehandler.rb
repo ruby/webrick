@@ -185,6 +185,94 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
     end
   end
 
+  def test_if_range_header
+    config = { :DocumentRoot => File.dirname(__FILE__), }
+    this_file = File.basename(__FILE__)
+    filesize = File.size(__FILE__)
+    this_data = File.binread(__FILE__)
+
+    TestWEBrick.start_httpserver(config) do |server, addr, port, log|
+      http = Net::HTTP.new(addr, port)
+
+      # First, get the file to obtain its ETag and Last-Modified
+      req = Net::HTTP::Get.new("/#{this_file}")
+      etag = nil
+      last_modified = nil
+      http.request(req) do |res|
+        assert_equal("200", res.code, log.call)
+        etag = res["etag"]
+        last_modified = res["last-modified"]
+        assert_not_nil(etag, "ETag should be present")
+        assert_not_nil(last_modified, "Last-Modified should be present")
+      end
+
+      # Test if-range with valid etag - should return 206 (partial content)
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=0-99",
+        "if-range" => etag
+      })
+      http.request(req) do |res|
+        assert_equal("206", res.code, log.call)
+        assert_equal("text/plain", res.content_type, log.call)
+        assert_equal(this_data[0..99], res.body, log.call)
+      end
+
+      # Test if-range with valid last-modified date - should return 206 (partial content)
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=100-199",
+        "if-range" => last_modified
+      })
+      http.request(req) do |res|
+        assert_equal("206", res.code, log.call)
+        assert_equal("text/plain", res.content_type, log.call)
+        assert_equal(this_data[100..199], res.body, log.call)
+      end
+
+      # Test if-range with invalid etag - should return 200 (full content)
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=0-99",
+        "if-range" => '"invalid-etag"'
+      })
+      http.request(req) do |res|
+        assert_equal("200", res.code, log.call)
+        assert_equal("text/plain", res.content_type, log.call)
+        assert_equal(this_data, res.body, log.call)
+      end
+
+      # Test if-range with old date - should return 200 (full content)
+      old_date = (Time.parse(last_modified) - 3600).httpdate  # 1 hour ago
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=0-99",
+        "if-range" => old_date
+      })
+      http.request(req) do |res|
+        assert_equal("200", res.code, log.call)
+        assert_equal("text/plain", res.content_type, log.call)
+        assert_equal(this_data, res.body, log.call)
+      end
+
+      # Test that if-modified-since still works for range requests (should return 304)
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=0-99",
+        "if-modified-since" => last_modified
+      })
+      http.request(req) do |res|
+        assert_equal("304", res.code, log.call)
+        assert_equal(nil, res.body, log.call)
+      end
+
+      # Test that if-none-match still works for range requests (should return 304)
+      req = Net::HTTP::Get.new("/#{this_file}", {
+        "range" => "bytes=0-99",
+        "if-none-match" => etag
+      })
+      http.request(req) do |res|
+        assert_equal("304", res.code, log.call)
+        assert_equal(nil, res.body, log.call)
+      end
+    end
+  end
+
   def test_non_disclosure_name
     config = { :DocumentRoot => File.dirname(__FILE__), }
     log_tester = lambda {|log, access_log|
