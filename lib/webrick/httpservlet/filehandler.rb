@@ -487,7 +487,7 @@ module WEBrick
         case enc = Encoding.find('filesystem')
         when Encoding::US_ASCII, Encoding::ASCII_8BIT
         else
-          type << "; charset=\"#{enc.name}\""
+          type << "; charset=#{enc.name}"
         end
         res['content-type'] = type
 
