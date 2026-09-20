@@ -98,4 +98,14 @@ class TestWEBrickHTTPUtils < Test::Unit::TestCase
     assert_equal("/foo/bar/", escape_path("/foo/bar/"))
     assert_equal("/%25foo/bar/", escape_path("/%foo/bar/"))
   end
+
+  def test_escape_with_nil_raises_clear_type_error
+    # [Bug: nil raised a confusing NoMethodError ("undefined method 'b'
+    # for nil:NilClass") instead of a clear, documented error - see
+    # https://github.com/ruby/webrick/issues/96
+    [:escape, :unescape, :escape_form, :unescape_form].each do |meth|
+      err = assert_raise(TypeError) { send(meth, nil) }
+      assert_equal("no implicit conversion of NilClass into String", err.message)
+    end
+  end
 end

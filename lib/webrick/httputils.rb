@@ -471,14 +471,20 @@ module WEBrick
 
     def _make_regex(str) /([#{Regexp.escape(str)}])/n end
     def _make_regex!(str) /([^#{Regexp.escape(str)}])/n end
+    def _ensure_string(str)
+      unless str.is_a?(String)
+        raise TypeError, "no implicit conversion of #{str.class} into String"
+      end
+      str
+    end
     def _escape(str, regex)
-      str = str.b
+      str = _ensure_string(str).b
       str.gsub!(regex) {"%%%02X" % $1.ord}
       # %-escaped string should contain US-ASCII only
       str.force_encoding(Encoding::US_ASCII)
     end
     def _unescape(str, regex)
-      str = str.b
+      str = _ensure_string(str).b
       str.gsub!(regex) {$1.hex.chr}
       # encoding of %-unescaped string is unknown
       str
@@ -519,7 +525,7 @@ module WEBrick
     # Unescapes form reserved characters in +str+
 
     def unescape_form(str)
-      _unescape(str.gsub(/\+/, " "), ESCAPED)
+      _unescape(_ensure_string(str).gsub(/\+/, " "), ESCAPED)
     end
 
     ##
