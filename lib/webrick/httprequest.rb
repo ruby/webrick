@@ -460,12 +460,16 @@ module WEBrick
       @request_line = read_line(socket, MAX_URI_LENGTH) if socket
       raise HTTPStatus::EOFError unless @request_line
 
+      # Set as soon as we have a request line, so it's available to
+      # access logging even if what follows raises (e.g. the
+      # RequestURITooLarge check below) - see [Bug #113].
+      @request_time = Time.now
+
       @request_bytes = @request_line.bytesize
       if @request_bytes >= MAX_URI_LENGTH and @request_line[-1, 1] != LF
         raise HTTPStatus::RequestURITooLarge
       end
 
-      @request_time = Time.now
       if /^(\S+) (\S++)(?: HTTP\/(\d+\.\d+))?\r\n/mo =~ @request_line
         @request_method = $1
         @unparsed_uri   = $2
