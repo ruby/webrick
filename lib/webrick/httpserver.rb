@@ -120,7 +120,6 @@ module WEBrick
         end
         break if @http_version < "1.1"
         break unless req.keep_alive?
-        break unless res.keep_alive?
       end
     end
 
