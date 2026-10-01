@@ -74,6 +74,11 @@ module WEBrick
         begin
           timeout = @config[:RequestTimeout]
           while timeout > 0
+            # at this point, the client may have already sent data which was
+            # read by the socket, but openssl may have already buffered it.
+            # This happens way more in JRuby due to JVM thread scheduling.
+            break if sock.respond_to?(:pending) && sock.pending > 0
+
             break if sock.to_io.wait_readable(0.5)
             break if @status != :Running
             timeout -= 0.5
