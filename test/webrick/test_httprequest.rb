@@ -79,6 +79,15 @@ class TestWEBrickHTTPRequest < Test::Unit::TestCase
     assert_raise(WEBrick::HTTPStatus::RequestURITooLarge){
       req.parse(StringIO.new(msg))
     }
+    # request_time must still be set even though parsing raised, since
+    # access logging (in HTTPServer#run's ensure block) reads it
+    # unconditionally - see [Bug #113]. Before the fix, this was nil,
+    # and access logging then raised
+    # "TypeError: can't convert nil into an exact number" from
+    # `Time.now - req.request_time`, masking the original
+    # RequestURITooLarge.
+    assert_kind_of(Time, req.request_time)
+    assert_nothing_raised(TypeError) { Time.now - req.request_time }
   end
 
   def test_invalid_content_length_header
