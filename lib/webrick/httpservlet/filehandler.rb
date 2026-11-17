@@ -46,35 +46,60 @@ module WEBrick
         mtime = st.mtime
         res['etag'] = sprintf("%x-%x-%x", st.ino, st.size, st.mtime.to_i)
 
-        if not_modified?(req, res, mtime, res['etag'])
-          res.body = ''
-          raise HTTPStatus::NotModified
-        elsif req['range']
-          make_partial_content(req, res, @local_path, st.size)
-          raise HTTPStatus::PartialContent
+        if req['range']
+          # Handle if-range header specially for range requests
+          if req['if-range']
+            if if_range_matches?(req, res, mtime)
+              # Resource unchanged - return partial content (206)
+              make_partial_content(req, res, @local_path, st.size)
+              raise HTTPStatus::PartialContent
+            else
+              # Resource changed - return full content (200)
+              mtype = HTTPUtils::mime_type(@local_path, @config[:MimeTypes])
+              res['content-type'] = mtype
+              res['content-length'] = st.size.to_s
+              res['last-modified'] = mtime.httpdate
+              res.body = File.open(@local_path, "rb")
+            end
+          else
+            # Range request without if-range - check other conditional headers
+            if not_modified?(req, res, mtime, res['etag'])
+              res.body = ''
+              raise HTTPStatus::NotModified
+            else
+              make_partial_content(req, res, @local_path, st.size)
+              raise HTTPStatus::PartialContent
+            end
+          end
         else
-          mtype = HTTPUtils::mime_type(@local_path, @config[:MimeTypes])
-          res['content-type'] = mtype
-          res['content-length'] = st.size.to_s
-          res['last-modified'] = mtime.httpdate
-          res.body = File.open(@local_path, "rb")
+          # Non-range request
+          if not_modified?(req, res, mtime, res['etag'])
+            res.body = ''
+            raise HTTPStatus::NotModified
+          else
+            mtype = HTTPUtils::mime_type(@local_path, @config[:MimeTypes])
+            res['content-type'] = mtype
+            res['content-length'] = st.size.to_s
+            res['last-modified'] = mtime.httpdate
+            res.body = File.open(@local_path, "rb")
+          end
+        end
+      end
+
+      def if_range_matches?(req, res, mtime)
+        return unless ir = req['if-range']
+
+        begin
+          Time.httpdate(ir) >= mtime.floor
+        rescue
+          HTTPUtils::split_header_value(ir).member?(res['etag'])
         end
       end
 
       def not_modified?(req, res, mtime, etag)
-        if ir = req['if-range']
-          begin
-            if Time.httpdate(ir) >= mtime
-              return true
-            end
-          rescue
-            if HTTPUtils::split_header_value(ir).member?(res['etag'])
-              return true
-            end
-          end
-        end
+        ims = req['if-modified-since']
+        if (ims = req['if-modified-since']) && Time.parse(ims) >= mtime.floor
 
-        if (ims = req['if-modified-since']) && Time.parse(ims) >= mtime
           return true
         end
 
