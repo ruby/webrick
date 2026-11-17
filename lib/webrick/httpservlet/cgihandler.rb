@@ -96,7 +96,9 @@ module WEBrick
           "Premature end of script headers: #{@script_filename}" if body.nil?
 
         begin
-          header = HTTPUtils::parse_header(raw_header)
+          header = HTTPUtils::parse_header(raw_header,
+            header_line_regexp: REGEXP_CGI_HEADER_LINE ,
+            continued_header_line_regexp: REGEXP_CONTINUED_CGI_HEADER_LINE)
           if /^(\d+)/ =~ header['status'][0]
             res.status = $1.to_i
             header.delete('status')
@@ -118,6 +120,10 @@ module WEBrick
         res.body = body
       end
       alias do_POST do_GET
+
+      REGEXP_CGI_HEADER_LINE = /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r?\n\z/m
+      REGEXP_CONTINUED_CGI_HEADER_LINE = /^[ \t]+([^\r\n\0]*?)\r?\n/m
+      private_constant :REGEXP_CGI_HEADER_LINE, :REGEXP_CONTINUED_CGI_HEADER_LINE
 
       # :startdoc:
     end
