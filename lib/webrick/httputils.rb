@@ -176,10 +176,19 @@ module WEBrick
         when /^([A-Za-z0-9!\#$%&'*+\-.^_`|~]+):([^\r\n\0]*?)\r\n\z/om
           field, value = $1, $2
           field.downcase!
-          header[field] = HEADER_CLASSES[field].new unless header.has_key?(field)
+          if header.has_key?(field)
+            if field == "transfer-encoding"
+              raise HTTPStatus::BadRequest, "duplicate 'transfer-encoding' header."
+            end
+          else
+            header[field] = HEADER_CLASSES[field].new
+          end
           header[field] << value
         when /^[ \t]+([^\r\n\0]*?)\r\n/om
-          unless field
+          case field
+          when "transfer-encoding"
+            raise HTTPStatus::BadRequest, "'transfer-encoding' header with obsolete line folding."
+          when nil
             raise HTTPStatus::BadRequest, "bad header '#{line}'."
           end
           value = line
